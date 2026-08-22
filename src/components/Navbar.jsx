@@ -10,33 +10,45 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="bg-forest-50 p-2 rounded-xl">
-                <Sprout className="h-6 w-6 text-forest-600" />
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="bg-forest-50 p-2 rounded-xl text-forest-700 flex items-center justify-center">
+                <Sprout className="h-6 w-6 text-forest-700" />
               </div>
-              <span className="text-xl font-bold text-gray-900 tracking-tight">FarmConnect</span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-gray-900 tracking-tight leading-none">FarmConnect</span>
+                <span className="text-[10px] text-gray-500 font-medium tracking-tight mt-0.5">Grow Better. Together.</span>
+              </div>
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">Home</Link>
-            <Link to="/explore" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">Explore</Link>
+          <div className="hidden md:flex items-center space-x-5 text-sm font-medium">
+            <Link to="/" className="flex items-center gap-1 text-gray-700 hover:text-forest-700 transition-colors">
+              <span>Home</span>
+            </Link>
+            <Link to="/explore" className="flex items-center gap-1 text-gray-700 hover:text-forest-700 transition-colors">
+              <Search className="w-4 h-4 text-gray-500" />
+              <span>Explore</span>
+            </Link>
             
             <Link 
               to="/natural-fertilizers" 
-              className="inline-flex items-center gap-1.5 bg-forest-50 hover:bg-forest-100 text-forest-800 font-bold px-3.5 py-1.5 rounded-full transition-all border border-forest-200 text-xs sm:text-sm shadow-sm"
+              className="inline-flex items-center gap-1.5 bg-forest-50/70 hover:bg-forest-100/70 text-forest-900 font-bold px-4 py-2 rounded-full transition-all border border-forest-200 text-xs shadow-xs"
             >
-              <Leaf className="w-4 h-4 text-forest-600" />
+              <Leaf className="w-3.5 h-3.5 text-forest-700" />
               <span>Natural Fertilizers</span>
-              <span className="bg-amber-400 text-forest-900 text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded-full">NEW</span>
+              <span className="bg-forest-800 text-white text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded-full tracking-wider">NEW</span>
             </Link>
 
-            <a href="#how-it-works" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">How it Works</a>
-            <Link to="/login" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">For Farmers</Link>
-            <div className="flex items-center gap-4 border-l border-gray-200 pl-6">
-              <Link to="/login" className="text-forest-700 font-medium hover:text-forest-800 transition-colors">Login</Link>
-              <Link to="/register" className="bg-forest-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-forest-700 transition-all shadow-sm hover:shadow">
-                Join as Farmer
+            <a href="#how-it-works" className="text-gray-700 hover:text-forest-700 transition-colors">How It Works</a>
+            <Link to="/login" className="text-gray-700 hover:text-forest-700 transition-colors">For Farmers</Link>
+            
+            <div className="flex items-center gap-3 pl-4">
+              <Link to="/login" className="px-4 py-2 rounded-full border border-gray-200 text-gray-700 font-semibold text-xs hover:bg-gray-50 transition-colors">
+                Login
+              </Link>
+              <Link to="/register" className="bg-forest-800 text-white px-5 py-2 rounded-xl text-xs font-semibold hover:bg-forest-900 transition-all shadow-xs flex items-center gap-1.5">
+                <Sprout className="w-3.5 h-3.5" />
+                <span>Join as Farmer</span>
               </Link>
             </div>
           </div>
