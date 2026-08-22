@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [farmerProfile, setFarmerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [globalLocation, setGlobalLocation] = useState(null);
   const isConfigured = isSupabaseConfigured();
 
   // Load user session on mount
@@ -56,10 +57,40 @@ export function AuthProvider({ children }) {
 
     loadSession();
 
+    // Try to get location automatically if permissions are already granted
+    if (navigator.geolocation) {
+      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        if (result.state === 'granted') {
+          navigator.geolocation.getCurrentPosition(pos => {
+            if (mounted) {
+              setGlobalLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            }
+          });
+        }
+      });
+    }
+
     return () => {
       mounted = false;
     };
   }, [isConfigured]);
+
+  const requestLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setGlobalLocation(loc);
+          resolve(loc);
+        },
+        (err) => reject(err)
+      );
+    });
+  };
 
   const sendOtp = async (formData) => {
     return await sendPhoneOtp(formData);
@@ -87,6 +118,8 @@ export function AuthProvider({ children }) {
       farmerProfile,
       loading,
       isConfigured,
+      globalLocation,
+      requestLocation,
       sendOtp,
       verifyOtp,
       logout,

@@ -2,17 +2,17 @@ import { Link } from 'react-router-dom';
 import { MapPin, User, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { translateProductName } from '../utils/translateName';
-import { useUserLocation } from '../hooks/useUserLocation';
+import { useAuth } from '../context/AuthContext';
 import { calculateDistanceInKm } from '../utils/distance';
 
 export default function ProductCard({ product }) {
   const { lang, t } = useLanguage();
-  const { userLocation } = useUserLocation();
+  const { globalLocation } = useAuth();
 
   // Calculate distance if product has lat/lng and user location is available
   let displayDistance = product.distance;
-  if (userLocation && product.lat && product.lng) {
-    const dist = calculateDistanceInKm(userLocation.lat, userLocation.lng, product.lat, product.lng);
+  if (globalLocation && product.lat && product.lng) {
+    const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
     displayDistance = `${dist.toFixed(1)} km away`;
   }
 

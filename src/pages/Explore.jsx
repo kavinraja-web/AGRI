@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 import { getProducts } from '../services/productService';
 import { useLanguage } from '../context/LanguageContext';
 import { calculateDistanceInKm } from '../utils/distance';
+import { useAuth } from '../context/AuthContext';
 
 // Category list with translation keys — value stays English for DB filter
 const CATEGORY_OPTIONS = [
@@ -26,6 +27,7 @@ const SORT_OPTIONS = [
 export default function Explore() {
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
+  const { globalLocation, requestLocation } = useAuth();
 
   const [searchTerm, setSearchTerm]           = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
@@ -34,21 +36,7 @@ export default function Explore() {
   const [products, setProducts]               = useState([]);
   const [loading, setLoading]                 = useState(true);
   
-  const [userLocation, setUserLocation]       = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
-
-  // Automatically request location if permitted, or prompt once
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then(result => {
-        if (result.state === 'granted') {
-          navigator.geolocation.getCurrentPosition(pos => {
-            setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          });
-        }
-      });
-    }
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -58,10 +46,10 @@ export default function Explore() {
         let data = await getProducts({ category: selectedCategory, searchTerm, sortBy });
         
         // Calculate distances if user location is known
-        if (userLocation) {
+        if (globalLocation) {
           data = data.map(product => {
             if (product.lat && product.lng) {
-              const dist = calculateDistanceInKm(userLocation.lat, userLocation.lng, product.lat, product.lng);
+              const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
               return { 
                 ...product, 
                 distance: `${dist.toFixed(1)} km away`,
@@ -85,29 +73,18 @@ export default function Explore() {
     }
     const timer = setTimeout(loadData, 200);
     return () => { active = false; clearTimeout(timer); };
-  }, [selectedCategory, searchTerm, sortBy, userLocation]);
+  }, [selectedCategory, searchTerm, sortBy, globalLocation]);
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
+  const handleGetLocation = async () => {
     setGettingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-        setSortBy('Nearest First');
-        setGettingLocation(false);
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        alert("Unable to retrieve your location.");
-        setGettingLocation(false);
-      }
-    );
+    try {
+      await requestLocation();
+      setSortBy('Nearest First');
+    } catch (error) {
+      alert("Unable to retrieve your location.");
+    } finally {
+      setGettingLocation(false);
+    }
   };
 
   return (
@@ -126,7 +103,7 @@ export default function Explore() {
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
           >
             {gettingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
-            {userLocation ? 'Location Active' : 'Find Near Me'}
+            {globalLocation ? 'Location Active' : 'Find Near Me'}
           </button>
           
           <div className="relative flex-grow md:w-72">
