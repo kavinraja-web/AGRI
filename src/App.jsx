@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import FarmerDashboard from './pages/FarmerDashboard';
 import AddProduce from './pages/AddProduce';
+import NaturalFertilizers from './pages/NaturalFertilizers';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/natural-fertilizers" element={<NaturalFertilizers />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/farmer/:id" element={<FarmerProfile />} />
             <Route path="/login" element={<Login />} />
