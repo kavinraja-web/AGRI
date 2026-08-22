@@ -102,6 +102,34 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* NEW: Natural Fertilizer & Local Livestock Farm Banner */}
+      <section className="py-12 bg-earth-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-fresh-600 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl text-center lg:text-left">
+              <span className="inline-block bg-amber-400 text-forest-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                FEATURED HUB
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                Natural Organic Fertilizers from Local Hen, Goat & Cow Farms
+              </h2>
+              <p className="text-forest-100 text-base sm:text-lg">
+                Stop spending thousands on chemical fertilizers. Buy bio-organic manure (poultry litter, goat pellets, cow dung) directly from nearby livestock farms and save up to 75% while boosting soil health!
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 flex-shrink-0 w-full sm:w-auto">
+              <Link 
+                to="/natural-fertilizers" 
+                className="bg-amber-400 hover:bg-amber-300 text-forest-900 font-extrabold px-8 py-4 rounded-full text-center transition-all shadow-lg hover:scale-105"
+              >
+                Explore Natural Fertilizers
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it Works */}
       <section id="how-it-works" className="py-24 bg-forest-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
