@@ -95,16 +95,43 @@ export default function ProductDetails() {
 
             <p className="text-gray-600 mb-8 text-lg leading-relaxed">{product.description || 'Fresh produce straight from local farms.'}</p>
 
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-earth-100 p-4 rounded-xl border border-earth-200">
                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Harvest Date</p>
                 <p className="font-medium text-gray-900">{product.harvestDate || 'Fresh'}</p>
               </div>
               <div className="bg-earth-100 p-4 rounded-xl border border-earth-200">
                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Location</p>
-                <p className="font-medium text-gray-900">{product.location}</p>
+                <p className="font-medium text-gray-900 flex items-center">
+                  {product.location}
+                </p>
               </div>
             </div>
+
+            {product.lat && product.lng && (
+              <div className="mb-8">
+                <div className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 mb-3">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    marginHeight="0"
+                    marginWidth="0"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${product.lng-0.01},${product.lat-0.01},${product.lng+0.01},${product.lat+0.01}&layer=mapnik&marker=${product.lat},${product.lng}`}
+                    title="Farm Location"
+                  ></iframe>
+                </div>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${product.lat},${product.lng}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm font-medium text-forest-600 hover:text-forest-700 bg-forest-50 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <MapPin className="h-4 w-4 mr-1.5" />
+                  View Farm Location
+                </a>
+              </div>
+            )}
 
             {/* Farmer Card */}
             {farmer && (

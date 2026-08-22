@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     experience TEXT DEFAULT 'Farming for 5+ years',
     description TEXT,
     avatar_url TEXT,
+    live_lat NUMERIC,
+    live_lng NUMERIC,
+    live_updated_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -42,6 +45,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     quantity NUMERIC NOT NULL DEFAULT 0 CHECK (quantity >= 0),
     location TEXT,
     distance_text TEXT,
+    lat NUMERIC,
+    lng NUMERIC,
     harvest_date DATE DEFAULT CURRENT_DATE,
     status TEXT NOT NULL DEFAULT 'Available' CHECK (status IN ('Available', 'Low Stock', 'Out of Stock', 'Draft')),
     description TEXT,

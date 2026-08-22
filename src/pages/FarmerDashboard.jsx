@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, TrendingUp, Users, Eye, Plus, Trash2, AlertCircle, Loader2, Database } from 'lucide-react';
+import { Package, TrendingUp, Users, Eye, Plus, Trash2, AlertCircle, Loader2, Database, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getFarmerProducts, deleteProduct } from '../services/productService';
@@ -22,8 +22,8 @@ export default function FarmerDashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
-
   const farmerId = user?.id || farmerProfile?.id || 1;
+
   const farmerName = farmerProfile?.name || farmerProfile?.full_name || 'Farmer';
 
   useEffect(() => {
@@ -118,6 +118,7 @@ export default function FarmerDashboard() {
               </div>
             ))}
           </div>
+
 
           {/* Your Produce Table */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

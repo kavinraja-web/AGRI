@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UploadCloud, ChevronLeft, Loader2, AlertCircle, CheckCircle, Image as ImageIcon } from 'lucide-react';
+import { UploadCloud, ChevronLeft, Loader2, AlertCircle, CheckCircle, Image as ImageIcon, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createProduct } from '../services/productService';
@@ -31,6 +31,44 @@ export default function AddProduce() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          setFormData(prev => ({ ...prev, lat: latitude, lng: longitude }));
+          
+          // Reverse geocode
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data && data.address) {
+            const city = data.address.city || data.address.town || data.address.village || '';
+            const district = data.address.county || data.address.state_district || '';
+            const state = data.address.state || '';
+            const formatted = [city, district, state].filter(Boolean).join(', ');
+            setFormData(prev => ({ ...prev, location: formatted }));
+          }
+        } catch (error) {
+          console.error("Error getting location address:", error);
+          alert("Failed to get address from coordinates.");
+        } finally {
+          setGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to retrieve your location. Please check permissions.");
+        setGettingLocation(false);
+      }
+    );
+  };
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
@@ -256,9 +294,20 @@ export default function AddProduce() {
                   </div>
                 </div>
 
-                {/* Location — no "Tamil Nadu" hardcoded placeholder */}
+                {/* Location */}
                 <div className="md:col-span-2">
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">{t('location')}</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700">{t('location')}</label>
+                    <button
+                      type="button"
+                      onClick={handleGetLocation}
+                      disabled={gettingLocation}
+                      className="text-forest-600 text-sm font-medium flex items-center hover:text-forest-700 disabled:opacity-50"
+                    >
+                      {gettingLocation ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
+                      Use My Location
+                    </button>
+                  </div>
                   <input
                     type="text" id="location"
                     value={formData.location} onChange={handleChange}

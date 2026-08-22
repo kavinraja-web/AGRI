@@ -78,7 +78,10 @@ export async function getFarmerProfile(userId) {
       verified: true,
       experience: 'Farming for 12+ years',
       description: 'We focus on organic vegetables and have been serving the local community for over a decade.',
-      avatar_url: 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=200&h=200'
+      avatar_url: 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=200&h=200',
+      live_lat: 12.8341,
+      live_lng: 79.7036,
+      live_updated_at: new Date().toISOString()
     };
   }
 
