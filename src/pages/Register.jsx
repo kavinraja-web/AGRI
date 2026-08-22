@@ -5,13 +5,13 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, isConfigured } = useAuth();
+  const { sendOtp, verifyOtp, isConfigured } = useAuth();
 
+  const [step, setStep] = useState(1);
+  const [otp, setOtp] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    email: '',
-    password: '',
     farmName: '',
     location: ''
   });
@@ -22,24 +22,38 @@ export default function Register() {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const handleRegister = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      await register({
+      await sendOtp({
         fullName: formData.name,
         phone: formData.phone,
-        email: formData.email,
-        password: formData.password,
         farmName: formData.farmName,
         location: formData.location
       });
+      setStep(2);
+    } catch (err) {
+      console.error('Failed to send OTP:', err);
+      setError(err.message || 'Failed to send OTP. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      await verifyOtp({ phone: formData.phone, token: otp });
       navigate('/farmer/dashboard');
     } catch (err) {
-      console.error('Registration failed:', err);
-      setError(err.message || 'Registration failed. Please check your credentials.');
+      console.error('Verification failed:', err);
+      setError(err.message || 'Invalid OTP.');
     } finally {
       setLoading(false);
     }
@@ -65,111 +79,130 @@ export default function Register() {
           </div>
         )}
         
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input 
-                id="name" 
-                type="text" 
-                required 
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="e.g. Ravi Kumar"
-                className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-              />
+        {step === 1 ? (
+          <form className="mt-8 space-y-6" onSubmit={handleSendOtp}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input 
+                  id="name" 
+                  type="text" 
+                  required 
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Ravi Kumar"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                />
+              </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input 
+                  id="phone" 
+                  type="tel" 
+                  required 
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+91 98765 43210"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input 
-                id="phone" 
-                type="tel" 
-                required 
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+91 98765 43210"
-                className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-            <input 
-              id="email" 
-              type="email" 
-              required 
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="ravi@example.com"
-              className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input 
-              id="password" 
-              type="password" 
-              required 
-              minLength={6}
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Minimum 6 characters"
-              className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-            />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="farmName" className="block text-sm font-medium text-gray-700 mb-1">Farm Name (Optional)</label>
-              <input 
-                id="farmName" 
-                type="text" 
-                value={formData.farmName}
-                onChange={handleChange}
-                placeholder="e.g. Green Acres"
-                className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="farmName" className="block text-sm font-medium text-gray-700 mb-1">Farm Name (Optional)</label>
+                <input 
+                  id="farmName" 
+                  type="text" 
+                  value={formData.farmName}
+                  onChange={handleChange}
+                  placeholder="e.g. Green Acres"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                />
+              </div>
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
+                <input 
+                  id="location" 
+                  type="text" 
+                  required 
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g. Kanchipuram, Tamil Nadu" 
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
-              <input 
-                id="location" 
-                type="text" 
-                required 
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="e.g. Kanchipuram, Tamil Nadu" 
-                className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
-              />
-            </div>
-          </div>
 
-          <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input id="terms" name="terms" type="checkbox" required className="h-4 w-4 text-forest-600 focus:ring-forest-500 border-gray-300 rounded" />
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input id="terms" name="terms" type="checkbox" required className="h-4 w-4 text-forest-600 focus:ring-forest-500 border-gray-300 rounded" />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="terms" className="font-medium text-gray-700">I agree to the terms and privacy policy.</label>
+              </div>
             </div>
-            <div className="ml-3 text-sm">
-              <label htmlFor="terms" className="font-medium text-gray-700">I agree to the terms and privacy policy.</label>
-            </div>
-          </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              'Create Farmer Account'
-            )}
-          </button>
-        </form>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Sending OTP...
+                </>
+              ) : (
+                'Send OTP'
+              )}
+            </button>
+          </form>
+        ) : (
+          <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">6-Digit OTP</label>
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 text-center tracking-widest font-mono text-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
+                  placeholder="------"
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading || otp.length < 6}
+              className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                'Verify & Create Account'
+              )}
+            </button>
+            
+            <div className="text-center mt-4">
+              <button 
+                type="button" 
+                onClick={() => setStep(1)}
+                className="text-sm font-medium text-forest-600 hover:text-forest-500"
+              >
+                Go Back
+              </button>
+            </div>
+          </form>
+        )}
         
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">

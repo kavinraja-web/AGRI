@@ -1,26 +1,21 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 /**
- * Sign up a new farmer account
+ * Send OTP for Login / Sign Up
  */
-export async function signUpFarmer({ email, password, fullName, phone, farmName, location }) {
+export async function sendPhoneOtp({ phone, fullName, farmName, location }) {
   if (!isSupabaseConfigured() || !supabase) {
     // Offline / demo mode mock response
-    return {
-      user: { id: 'mock-farmer-1', email },
-      session: null,
-      message: 'Demo mode: Supabase keys not set. Registered locally.'
-    };
+    return { message: 'Demo mode: Supabase keys not set. OTP sent locally.' };
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+  const { data, error } = await supabase.auth.signInWithOtp({
+    phone,
     options: {
       data: {
-        full_name: fullName,
+        full_name: fullName || 'Farmer',
         phone,
-        farm_name: farmName,
+        farm_name: farmName || '',
         location: location || 'Tamil Nadu',
         role: 'farmer',
         avatar_url: 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=200&h=200',
@@ -34,20 +29,21 @@ export async function signUpFarmer({ email, password, fullName, phone, farmName,
 }
 
 /**
- * Sign in farmer with email and password
+ * Verify OTP to complete login
  */
-export async function signInFarmer({ email, password }) {
+export async function verifyPhoneOtp({ phone, token }) {
   if (!isSupabaseConfigured() || !supabase) {
     // Offline / demo mode mock login
     return {
-      user: { id: 'mock-farmer-1', email },
-      session: null
+      user: { id: 'mock-farmer-1', phone },
+      session: {}
     };
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone,
+    token,
+    type: 'sms'
   });
 
   if (error) throw error;

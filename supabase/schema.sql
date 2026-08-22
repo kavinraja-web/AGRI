@@ -116,7 +116,7 @@ BEGIN
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'Farmer'),
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'phone', ''),
+        COALESCE(NEW.phone, NEW.raw_user_meta_data->>'phone', ''),
         COALESCE(NEW.raw_user_meta_data->>'role', 'farmer'),
         COALESCE(NEW.raw_user_meta_data->>'farm_name', ''),
         COALESCE(NEW.raw_user_meta_data->>'location', 'Tamil Nadu'),

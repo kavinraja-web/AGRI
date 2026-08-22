@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { getFarmerProfile, signUpFarmer, signInFarmer, signOutFarmer } from '../services/authService';
+import { getFarmerProfile, sendPhoneOtp, verifyPhoneOtp, signOutFarmer } from '../services/authService';
 
 const AuthContext = createContext({});
 
@@ -61,26 +61,12 @@ export function AuthProvider({ children }) {
     };
   }, [isConfigured]);
 
-  const register = async (formData) => {
-    const res = await signUpFarmer(formData);
-    if (res?.user && (!isConfigured || !supabase)) {
-      setUser(res.user);
-      setFarmerProfile({
-        id: res.user.id,
-        full_name: formData.fullName,
-        name: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        farm_name: formData.farmName,
-        location: formData.location,
-        avatar_url: 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=200&h=200'
-      });
-    }
-    return res;
+  const sendOtp = async (formData) => {
+    return await sendPhoneOtp(formData);
   };
 
-  const login = async (credentials) => {
-    const res = await signInFarmer(credentials);
+  const verifyOtp = async (credentials) => {
+    const res = await verifyPhoneOtp(credentials);
     if (res?.user && (!isConfigured || !supabase)) {
       setUser(res.user);
       const mockProfile = await getFarmerProfile(1);
@@ -101,8 +87,8 @@ export function AuthProvider({ children }) {
       farmerProfile,
       loading,
       isConfigured,
-      register,
-      login,
+      sendOtp,
+      verifyOtp,
       logout,
       setFarmerProfile
     }}>
