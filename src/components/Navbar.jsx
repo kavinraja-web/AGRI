@@ -19,6 +19,7 @@ export default function Navbar() {
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">Home</Link>
             <Link to="/explore" className="text-gray-600 hover:text-forest-600 font-medium transition-colors">Explore</Link>
             
             <Link 
@@ -51,6 +52,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-b border-gray-100 px-4 pt-2 pb-6 space-y-4">
+          <Link to="/" onClick={() => setIsOpen(false)} className="block text-gray-600 font-medium py-2">Home</Link>
           <Link to="/explore" onClick={() => setIsOpen(false)} className="block text-gray-600 font-medium py-2">Explore</Link>
           <Link 
             to="/natural-fertilizers" 
