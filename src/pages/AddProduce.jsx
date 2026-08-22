@@ -4,6 +4,7 @@ import { UploadCloud, ChevronLeft, Loader2, AlertCircle, CheckCircle, Image as I
 import { useAuth } from '../context/AuthContext';
 import { createProduct } from '../services/productService';
 import { uploadProduceImage } from '../services/storageService';
+import { classifyImage } from '../utils/imageClassifier';
 
 export default function AddProduce() {
   const navigate = useNavigate();
@@ -27,16 +28,39 @@ export default function AddProduce() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      // AI Image Analysis
+      setIsAnalyzingImage(true);
+      try {
+        const result = await classifyImage(file);
+        if (result) {
+          setFormData(prev => ({
+            ...prev,
+            name: result.productName,
+            category: result.category
+          }));
+          setError(null);
+        } else {
+          setError("Failed to analyze image. Please check API key or try a different image.");
+        }
+      } catch (err) {
+        console.error("Error analyzing image:", err);
+        setError("AI Error: " + (err.message || "Failed to connect to AI."));
+      } finally {
+        setIsAnalyzingImage(false);
+      }
     }
   };
 
@@ -121,15 +145,25 @@ export default function AddProduce() {
                 {imagePreview ? (
                   <div className="relative rounded-2xl overflow-hidden border border-gray-200 group h-64 bg-gray-100">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                      <button 
-                        type="button" 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-white text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-gray-50"
-                      >
-                        Change Image
-                      </button>
-                    </div>
+                    
+                    {isAnalyzingImage && (
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white">
+                        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                        <span className="font-medium text-sm">AI Analyzing Product...</span>
+                      </div>
+                    )}
+                    
+                    {!isAnalyzingImage && (
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button 
+                          type="button" 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="bg-white text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-gray-50"
+                        >
+                          Change Image
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div 
