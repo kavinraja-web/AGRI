@@ -58,9 +58,10 @@ function SkeletonCard() {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function SmartSearch() {
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
 
   const [query, setQuery]           = useState('');
+  const [isListening, setIsListening] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
   const [results, setResults]       = useState([]);
   const [parsedIntent, setParsedIntent] = useState(null);
@@ -97,11 +98,17 @@ export default function SmartSearch() {
 
     const { parsed, results: res, clarification: clar } = await smartSearch(q, allProducts);
 
+    if (parsed && parsed.language === 'ta') {
+      setLang('ta');
+    } else if (parsed && parsed.language === 'en') {
+      setLang('en');
+    }
+
     setParsedIntent(parsed);
     setResults(res);
     setClarification(clar);
     setLoadingStep(null);
-  }, [allProducts, dbReady]);
+  }, [allProducts, dbReady, setLang]);
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -129,6 +136,32 @@ export default function SmartSearch() {
     setResults([]);
     setClarification(null);
     setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const startVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert(lang === 'ta' ? "குரல் தேடல் உங்கள் பிரவுசரில் வேலை செய்யவில்லை." : "Voice search is not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    // Use the current UI language to guide the speech recognition model
+    recognition.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      executeSearch(transcript);
+    };
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
   };
 
   const examples = EXAMPLES[lang === 'ta' ? 'ta' : 'en'];
@@ -189,11 +222,11 @@ export default function SmartSearch() {
                 <X className="h-4 w-4" />
               </button>
             )}
-            {/* Mic placeholder — voice search coming soon */}
             <button
               type="button"
-              title={lang === 'ta' ? 'குரல் தேடல் விரைவில் வருகிறது' : 'Voice search coming soon'}
-              className="p-3 text-gray-300 cursor-not-allowed"
+              onClick={startVoiceSearch}
+              title={lang === 'ta' ? 'குரல் மூலம் தேடு' : 'Search by Voice'}
+              className={`p-3 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-forest-600'}`}
             >
               <Mic className="h-5 w-5" />
             </button>
@@ -359,6 +392,13 @@ export default function SmartSearch() {
                     icon="📍"
                     label={parsedIntent.filters.location}
                     color="bg-orange-50 text-orange-700 border-orange-200"
+                  />
+                )}
+                {parsedIntent.filters.maxDistance != null && (
+                  <IntentChip
+                    icon="📏"
+                    label={lang === 'ta' ? `${parsedIntent.filters.maxDistance} கி.மீ க்குள்` : `Within ${parsedIntent.filters.maxDistance} km`}
+                    color="bg-pink-50 text-pink-700 border-pink-200"
                   />
                 )}
                 {parsedIntent.sort && (

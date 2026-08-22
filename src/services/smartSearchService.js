@@ -269,7 +269,7 @@ function detectLanguage(query) {
 
   if (hasTamil && (hasEnglish || hasTanglish)) return 'mixed';
   if (hasTamil) return 'ta';
-  if (hasTanglish) return 'tanglish';
+  if (hasTanglish) return 'ta'; // Treat Tanglish as Tamil intent for UI switching
   return 'en';
 }
 
@@ -436,6 +436,18 @@ function extractLocation(query, allProducts = []) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 7.5 DISTANCE EXTRACTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function extractDistance(query) {
+  const q = query.toLowerCase();
+  // "within 2km", "2 km distance", "2 கிலோமீட்டர்", "2 km kulla"
+  const distMatch = q.match(/(\d+(?:\.\d+)?)\s*(?:km|kms|kilometers?|கிலோமீட்டர்|கி\.மீ)\b/i);
+  if (distMatch) return parseFloat(distMatch[1]);
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 8. SORT EXTRACTION
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -507,6 +519,7 @@ export function parseQuery(rawQuery, allProducts = []) {
   const { minPrice, maxPrice } = extractPrice(query);
   const { quantity, unit }     = extractQuantity(query);
   const location               = extractLocation(query, allProducts);
+  const maxDistance            = extractDistance(query);
   const sort                   = extractSort(query);
 
   const extracted = { product, maxPrice, minPrice, quantity };
@@ -519,6 +532,7 @@ export function parseQuery(rawQuery, allProducts = []) {
   if (maxPrice || minPrice) confidence += 0.15;
   if (quantity)            confidence += 0.10;
   if (location)            confidence += 0.10;
+  if (maxDistance)         confidence += 0.05;
   if (clarification)       confidence -= 0.15;
 
   return {
@@ -533,6 +547,7 @@ export function parseQuery(rawQuery, allProducts = []) {
       quantity:    quantity || null,
       unit:        unit || (quantity ? 'kg' : null),
       location:    location || null,
+      maxDistance: maxDistance || null,
     },
     sort,
     clarification,
@@ -547,7 +562,7 @@ export function parseQuery(rawQuery, allProducts = []) {
 export function filterAndRank(products, parsed) {
   const { filters, sort, query } = parsed;
 
-  const hasStructuredFilter = filters.productName || filters.category || filters.maxPrice || filters.minPrice || filters.quantity || filters.location;
+  const hasStructuredFilter = filters.productName || filters.category || filters.maxPrice || filters.minPrice || filters.quantity || filters.location || filters.maxDistance;
   const rawTerm = (query || '').toLowerCase();
 
   // --- Filter ---
@@ -589,6 +604,12 @@ export function filterAndRank(products, parsed) {
     if (filters.location) {
       const loc = (p.location || p.farmerLocation || '').toLowerCase();
       if (!loc.includes(filters.location.toLowerCase())) return false;
+    }
+
+    // Distance filter
+    if (filters.maxDistance != null) {
+      const dist = Number(p.distanceValue) || 50; // Mock distance if undefined
+      if (dist > filters.maxDistance) return false;
     }
 
     return true;
