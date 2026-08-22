@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, Loader2, MapPin } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { getProducts } from '../services/productService';
 import { useLanguage } from '../context/LanguageContext';
+import { calculateDistanceInMiles } from '../utils/distance';
 
 // Category list with translation keys — value stays English for DB filter
 const CATEGORY_OPTIONS = [
@@ -32,13 +33,36 @@ export default function Explore() {
   const [isFilterOpen, setIsFilterOpen]       = useState(false);
   const [products, setProducts]               = useState([]);
   const [loading, setLoading]                 = useState(true);
+  
+  const [userLocation, setUserLocation]       = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     let active = true;
     async function loadData() {
       setLoading(true);
       try {
-        const data = await getProducts({ category: selectedCategory, searchTerm, sortBy });
+        let data = await getProducts({ category: selectedCategory, searchTerm, sortBy });
+        
+        // Calculate distances if user location is known
+        if (userLocation) {
+          data = data.map(product => {
+            if (product.lat && product.lng) {
+              const dist = calculateDistanceInMiles(userLocation.lat, userLocation.lng, product.lat, product.lng);
+              return { 
+                ...product, 
+                distance: `${dist.toFixed(1)} miles away`,
+                distanceValue: dist 
+              };
+            }
+            return product;
+          });
+          
+          if (sortBy === 'Nearest First') {
+            data.sort((a, b) => (a.distanceValue || 9999) - (b.distanceValue || 9999));
+          }
+        }
+        
         if (active) setProducts(data);
       } catch (err) {
         console.error('Error fetching produce in Explore:', err);
@@ -48,7 +72,30 @@ export default function Explore() {
     }
     const timer = setTimeout(loadData, 200);
     return () => { active = false; clearTimeout(timer); };
-  }, [selectedCategory, searchTerm, sortBy]);
+  }, [selectedCategory, searchTerm, sortBy, userLocation]);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setSortBy('Nearest First');
+        setGettingLocation(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to retrieve your location.");
+        setGettingLocation(false);
+      }
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,7 +106,16 @@ export default function Explore() {
           <p className="text-gray-600">{t('exploreSubtitle')}</p>
         </div>
 
-        <div className="w-full md:w-auto flex gap-2">
+        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+          <button 
+            onClick={handleGetLocation}
+            disabled={gettingLocation}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
+          >
+            {gettingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+            {userLocation ? 'Location Active' : 'Find Near Me'}
+          </button>
+          
           <div className="relative flex-grow md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input

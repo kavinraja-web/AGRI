@@ -18,8 +18,8 @@ function formatProduct(item) {
     farmerImage: farmer.avatar_url,
     farmerVerified: farmer.verified ?? true,
     location: item.location || farmer.location || 'Tamil Nadu',
-    distance: item.distance_text || `${farmer.distance_km || 15} km away`,
-    distanceValue: farmer.distance_km || 15,
+    distance: item.distance_text || null,
+    distanceValue: null,
     lat: item.lat,
     lng: item.lng,
     harvestDate: item.harvest_date,
@@ -160,8 +160,8 @@ export async function getProductById(id) {
       email: data.profiles.email,
       farmName: data.profiles.farm_name,
       location: data.profiles.location,
-      distance: `${data.profiles.distance_km || 15} km away`,
-      distanceValue: data.profiles.distance_km || 15,
+      distance: null,
+      distanceValue: null,
       rating: data.profiles.rating || 4.8,
       productsCount: data.profiles.products_count || 1,
       peopleReached: data.profiles.people_reached || 50,
@@ -234,7 +234,6 @@ export async function createProduct(productData) {
       ...productData,
       farmerId: 1,
       farmerName: 'Ravi Kumar',
-      distance: '18 km away',
       status: productData.status || 'Available'
     };
     mockProducts.unshift(newProduct);
