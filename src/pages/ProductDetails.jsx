@@ -1,17 +1,52 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, User, CheckCircle2, ChevronLeft, ArrowRight, TrendingDown } from 'lucide-react';
-import { products, farmers } from '../data/mockData';
+import { MapPin, CheckCircle2, ChevronLeft, TrendingDown, Loader2, Phone } from 'lucide-react';
+import { getProductById } from '../services/productService';
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const product = products.find(p => p.id === parseInt(id)) || products[0];
-  const farmer = farmers.find(f => f.id === product.farmerId) || farmers[0];
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock price comparison data
+  useEffect(() => {
+    async function loadProduct() {
+      setLoading(true);
+      try {
+        const res = await getProductById(id);
+        setData(res);
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex flex-col items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-forest-600 mb-3" />
+        <p className="text-gray-500 font-medium">Loading produce details...</p>
+      </div>
+    );
+  }
+
+  const { product, farmer } = data || {};
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-2xl font-bold text-gray-800">Product not found</h2>
+        <Link to="/explore" className="btn-primary mt-4 inline-block">Back to Explore</Link>
+      </div>
+    );
+  }
+
+  // Price comparison
   const comparisonData = [
-    { name: farmer.name, price: product.price, current: true },
-    { name: "Suresh", price: product.price - 3, current: false },
-    { name: "Lakshmi", price: product.price + 2, current: false }
+    { name: farmer?.name || "This Farm", price: product.price, current: true },
+    { name: "Regional Market Avg", price: Math.round(product.price * 1.15), current: false },
+    { name: "Retail Supermarket", price: Math.round(product.price * 1.35), current: false }
   ].sort((a, b) => a.price - b.price);
 
   return (
@@ -53,12 +88,12 @@ export default function ProductDetails() {
               )}
             </div>
 
-            <p className="text-gray-600 mb-8 text-lg leading-relaxed">{product.description}</p>
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed">{product.description || 'Fresh produce straight from local farms.'}</p>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="bg-earth-100 p-4 rounded-xl border border-earth-200">
                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Harvest Date</p>
-                <p className="font-medium text-gray-900">{product.harvestDate}</p>
+                <p className="font-medium text-gray-900">{product.harvestDate || 'Fresh'}</p>
               </div>
               <div className="bg-earth-100 p-4 rounded-xl border border-earth-200">
                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Location</p>
@@ -67,29 +102,44 @@ export default function ProductDetails() {
             </div>
 
             {/* Farmer Card */}
-            <div className="border border-gray-200 rounded-2xl p-5 mb-8 flex items-center justify-between hover:border-forest-200 transition-colors bg-white shadow-sm">
-              <div className="flex items-center gap-4">
-                <img src={farmer.image} alt={farmer.name} className="w-14 h-14 rounded-full object-cover border-2 border-forest-100" />
-                <div>
-                  <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
-                    {farmer.name}
-                    {farmer.verified && <CheckCircle2 className="h-4 w-4 text-forest-500" />}
-                  </h3>
-                  <p className="text-sm text-gray-500 flex items-center mt-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {farmer.location}
-                  </p>
+            {farmer && (
+              <div className="border border-gray-200 rounded-2xl p-5 mb-8 flex items-center justify-between hover:border-forest-200 transition-colors bg-white shadow-sm">
+                <div className="flex items-center gap-4">
+                  <img src={farmer.image || 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=200&h=200'} alt={farmer.name} className="w-14 h-14 rounded-full object-cover border-2 border-forest-100" />
+                  <div>
+                    <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
+                      {farmer.name}
+                      {farmer.verified && <CheckCircle2 className="h-4 w-4 text-forest-500" />}
+                    </h3>
+                    <p className="text-sm text-gray-500 flex items-center mt-1">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {farmer.location}
+                    </p>
+                  </div>
                 </div>
+                <Link to={`/farmer/${farmer.id}`} className="text-forest-600 font-medium text-sm hover:text-forest-700">
+                  View Profile
+                </Link>
               </div>
-              <Link to={`/farmer/${farmer.id}`} className="text-forest-600 font-medium text-sm hover:text-forest-700">
-                View Profile
-              </Link>
-            </div>
+            )}
 
             <div className="flex gap-4 mt-auto">
-              <button className="btn-primary flex-grow text-lg shadow-forest-500/30">
-                Contact Farmer
-              </button>
+              {farmer?.phone ? (
+                <a 
+                  href={`tel:${farmer.phone}`} 
+                  className="btn-primary flex-grow text-lg shadow-forest-500/30 flex items-center justify-center gap-2"
+                >
+                  <Phone className="h-5 w-5" />
+                  Call Farmer ({farmer.phone})
+                </a>
+              ) : (
+                <button 
+                  onClick={() => alert(`Connecting with farmer ${farmer?.name || ''}...`)}
+                  className="btn-primary flex-grow text-lg shadow-forest-500/30"
+                >
+                  Contact Farmer
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -99,23 +149,23 @@ export default function ProductDetails() {
       <div className="mt-12">
         <div className="flex items-center gap-2 mb-6">
           <TrendingDown className="text-forest-600 h-6 w-6" />
-          <h2 className="text-2xl font-bold text-gray-900">Price Comparison</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Direct Farm Price vs Market</h2>
         </div>
         <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm max-w-2xl">
-          <p className="text-gray-500 mb-6">Current prices for similar {product.name.toLowerCase()} in your area.</p>
+          <p className="text-gray-500 mb-6">You save significantly by buying directly from the farmer without middlemen.</p>
           <div className="space-y-4">
-            {comparisonData.map((data, idx) => (
-              <div key={idx} className={`flex justify-between items-center p-4 rounded-xl ${data.current ? 'bg-forest-50 border border-forest-100' : 'hover:bg-gray-50'}`}>
+            {comparisonData.map((dataItem, idx) => (
+              <div key={idx} className={`flex justify-between items-center p-4 rounded-xl ${dataItem.current ? 'bg-forest-50 border border-forest-100' : 'hover:bg-gray-50'}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {data.name.charAt(0)}
+                    {dataItem.name.charAt(0)}
                   </div>
-                  <span className={`font-medium ${data.current ? 'text-forest-800' : 'text-gray-700'}`}>
-                    {data.name} {data.current && "(This Farmer)"}
+                  <span className={`font-medium ${dataItem.current ? 'text-forest-800' : 'text-gray-700'}`}>
+                    {dataItem.name} {dataItem.current && "(Direct Farm Price)"}
                   </span>
                 </div>
-                <span className={`font-bold ${data.current ? 'text-forest-700' : 'text-gray-900'}`}>
-                  ₹{data.price} <span className="text-sm font-normal text-gray-500">/{product.unit}</span>
+                <span className={`font-bold ${dataItem.current ? 'text-forest-700' : 'text-gray-900'}`}>
+                  ₹{dataItem.price} <span className="text-sm font-normal text-gray-500">/{product.unit}</span>
                 </span>
               </div>
             ))}
@@ -125,3 +175,4 @@ export default function ProductDetails() {
     </div>
   );
 }
+

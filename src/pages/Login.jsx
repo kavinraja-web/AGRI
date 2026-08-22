@@ -1,13 +1,31 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sprout } from 'lucide-react';
+import { Sprout, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, isConfigured } = useAuth();
 
-  const handleLogin = (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Mock login, redirect to dashboard
-    navigate('/farmer/dashboard');
+    setLoading(true);
+    setError(null);
+
+    try {
+      await login({ email, password });
+      navigate('/farmer/dashboard');
+    } catch (err) {
+      console.error('Login failed:', err);
+      setError(err.message || 'Invalid email or password.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,8 +36,17 @@ export default function Login() {
             <Sprout className="h-8 w-8 text-forest-600" />
           </div>
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome back</h2>
-          <p className="text-gray-500">Log in to manage your farm profile</p>
+          <p className="text-gray-500">
+            {isConfigured ? 'Log in with your Supabase farmer credentials' : 'Log in to manage your farm profile'}
+          </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
@@ -30,6 +57,8 @@ export default function Login() {
                 name="email"
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 placeholder="you@example.com"
               />
@@ -41,6 +70,8 @@ export default function Login() {
                 name="password"
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 placeholder="••••••••"
               />
@@ -57,8 +88,19 @@ export default function Login() {
             </div>
           </div>
 
-          <button type="submit" className="w-full btn-primary text-lg flex justify-center py-3">
-            Sign in
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              'Sign in'
+            )}
           </button>
         </form>
         
@@ -74,3 +116,4 @@ export default function Login() {
     </div>
   );
 }
+
