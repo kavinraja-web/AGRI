@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Sprout, Menu, X, Leaf } from 'lucide-react';
+import { Sprout, Menu, X, Leaf, Search } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
