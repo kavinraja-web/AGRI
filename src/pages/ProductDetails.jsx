@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, CheckCircle2, ChevronLeft, TrendingDown, Loader2, Phone } from 'lucide-react';
 import { getProductById } from '../services/productService';
+import { useLanguage } from '../context/LanguageContext';
+import { translateProductName } from '../utils/translateName';
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const { lang, t } = useLanguage();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -70,20 +73,22 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          {/* Right: Details */}
+              {/* Right: Details */}
           <div className="p-8 lg:p-12 flex flex-col justify-center">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
+                <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-2">
+                  {translateProductName(product.name, lang)}
+                </h1>
                 <p className="text-forest-700 font-bold text-2xl">₹{product.price} <span className="text-lg text-gray-500 font-normal">/ {product.unit}</span></p>
               </div>
               {product.status === 'Available' ? (
                 <span className="bg-forest-100 text-forest-700 px-3 py-1 rounded-full text-sm font-bold">
-                  {product.quantity} {product.unit} available
+                  {product.quantity} {product.unit} {t('available').toLowerCase()}
                 </span>
               ) : (
                 <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">
-                  {product.status}
+                  {product.status === 'Low Stock' ? t('lowStock') : product.status}
                 </span>
               )}
             </div>
@@ -118,7 +123,7 @@ export default function ProductDetails() {
                   </div>
                 </div>
                 <Link to={`/farmer/${farmer.id}`} className="text-forest-600 font-medium text-sm hover:text-forest-700">
-                  View Profile
+                  {t('viewDetails')}
                 </Link>
               </div>
             )}

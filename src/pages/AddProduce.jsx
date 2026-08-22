@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UploadCloud, ChevronLeft, Loader2, AlertCircle, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { createProduct } from '../services/productService';
 import { uploadProduceImage } from '../services/storageService';
 import { classifyImage } from '../utils/imageClassifier';
@@ -9,6 +10,7 @@ import { classifyImage } from '../utils/imageClassifier';
 export default function AddProduce() {
   const navigate = useNavigate();
   const { user, farmerProfile, isConfigured } = useAuth();
+  const { t } = useLanguage();
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -71,23 +73,15 @@ export default function AddProduce() {
 
     try {
       let imageUrl = 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600&h=400';
-      
       if (selectedFile) {
         imageUrl = await uploadProduceImage(selectedFile);
       }
 
       const farmerId = user?.id || farmerProfile?.id || 1;
-
-      await createProduct({
-        ...formData,
-        farmerId,
-        imageUrl
-      });
+      await createProduct({ ...formData, farmerId, imageUrl });
 
       setSuccess(true);
-      setTimeout(() => {
-        navigate('/farmer/dashboard');
-      }, 1200);
+      setTimeout(() => navigate('/farmer/dashboard'), 1200);
     } catch (err) {
       console.error('Failed to create produce listing:', err);
       setError(err.message || 'Failed to publish produce. Please check database permissions.');
@@ -96,25 +90,43 @@ export default function AddProduce() {
     }
   };
 
+  // Category options — value stays in English for DB, label translates
+  const categoryOptions = [
+    { value: 'Vegetables', labelKey: 'catVegetables' },
+    { value: 'Fruits',     labelKey: 'catFruits' },
+    { value: 'Grains',     labelKey: 'catGrains' },
+    { value: 'Spices',     labelKey: 'catSpices' },
+    { value: 'Dairy',      labelKey: 'catDairy' },
+    { value: 'Other',      labelKey: 'catOther' },
+  ];
+
+  const unitOptions = [
+    { value: 'kg',      labelKey: 'unitKg' },
+    { value: 'grams',   labelKey: 'unitGrams' },
+    { value: 'pieces',  labelKey: 'unitPieces' },
+    { value: 'bunches', labelKey: 'unitBunches' },
+    { value: 'liters',  labelKey: 'unitLiters' },
+  ];
+
   return (
     <div className="flex min-h-[calc(100vh-80px)] bg-gray-50">
       <main className="flex-1 p-4 md:p-8">
         <div className="max-w-3xl mx-auto">
           <Link to="/farmer/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-forest-600 mb-6 transition-colors">
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Dashboard
+            {t('backToDashboard')}
           </Link>
 
           <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm">
             <div className="flex justify-between items-start mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">Add New Produce</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('addProduceTitle')}</h1>
               {isConfigured && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Supabase Live DB
                 </span>
               )}
             </div>
-            <p className="text-gray-500 mb-8">List your fresh produce for local consumers to discover.</p>
+            <p className="text-gray-500 mb-8">{t('addProduceSubtitle')}</p>
 
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
@@ -126,26 +138,19 @@ export default function AddProduce() {
             {success && (
               <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
                 <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                <span>Produce successfully published to Supabase! Redirecting...</span>
+                <span>{t('publishedSuccess')}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Image Upload Area */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  accept="image/*" 
-                  className="hidden" 
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('uploadBtn')}</label>
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
                 {imagePreview ? (
                   <div className="relative rounded-2xl overflow-hidden border border-gray-200 group h-64 bg-gray-100">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    
                     {isAnalyzingImage && (
                       <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white">
                         <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -154,27 +159,27 @@ export default function AddProduce() {
                     )}
                     
                     {!isAnalyzingImage && (
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                        <button 
-                          type="button" 
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button
+                          type="button"
                           onClick={() => fileInputRef.current?.click()}
                           className="bg-white text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-gray-50"
                         >
-                          Change Image
+                          {t('changeImage')}
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                    <p className="text-gray-900 font-medium mb-1">Click to upload product image</p>
-                    <p className="text-gray-500 text-sm mb-4">PNG, JPG, WebP up to 5MB</p>
+                    <p className="text-gray-900 font-medium mb-1">{t('uploadImages')}</p>
+                    <p className="text-gray-500 text-sm mb-4">{t('uploadImages2')}</p>
                     <span className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm shadow-sm inline-flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4" /> Choose Image
+                      <ImageIcon className="h-4 w-4" /> {t('uploadBtn')}
                     </span>
                   </div>
                 )}
@@ -182,139 +187,117 @@ export default function AddProduce() {
 
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Product Name */}
                 <div className="md:col-span-2">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    required 
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g. Fresh Red Tomatoes" 
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">{t('productName')}</label>
+                  <input
+                    type="text" id="name" required
+                    value={formData.name} onChange={handleChange}
+                    placeholder={t('productNamePlaceholder')}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                   />
                 </div>
 
+                {/* Category — translated options */}
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select 
-                    id="category" 
-                    value={formData.category}
-                    onChange={handleChange}
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">{t('category')}</label>
+                  <select
+                    id="category" value={formData.category} onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500 bg-white"
                   >
-                    <option>Vegetables</option>
-                    <option>Fruits</option>
-                    <option>Grains</option>
-                    <option>Spices</option>
-                    <option>Dairy</option>
-                    <option>Other</option>
+                    {categoryOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+                    ))}
                   </select>
                 </div>
 
+                {/* Harvest Date */}
                 <div>
-                  <label htmlFor="harvestDate" className="block text-sm font-medium text-gray-700 mb-1">Harvest Date</label>
-                  <input 
-                    type="date" 
-                    id="harvestDate" 
-                    value={formData.harvestDate}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  <label htmlFor="harvestDate" className="block text-sm font-medium text-gray-700 mb-1">{t('harvestDate')}</label>
+                  <input
+                    type="date" id="harvestDate"
+                    value={formData.harvestDate} onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                   />
                 </div>
 
+                {/* Price */}
                 <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                  <input 
-                    type="number" 
-                    id="price" 
-                    required 
-                    min="0"
-                    step="any"
-                    value={formData.price}
-                    onChange={handleChange}
-                    placeholder="e.g. 40" 
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">{t('price')} (₹)</label>
+                  <input
+                    type="number" id="price" required min="0" step="any"
+                    value={formData.price} onChange={handleChange}
+                    placeholder="e.g. 40"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                   />
                 </div>
 
+                {/* Quantity + Unit */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                    <input 
-                      type="number" 
-                      id="quantity" 
-                      required 
-                      min="0"
-                      value={formData.quantity}
-                      onChange={handleChange}
-                      placeholder="100" 
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">{t('quantity')}</label>
+                    <input
+                      type="number" id="quantity" required min="0"
+                      value={formData.quantity} onChange={handleChange}
+                      placeholder="100"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                     />
                   </div>
                   <div>
-                    <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                    <select 
-                      id="unit" 
-                      value={formData.unit}
-                      onChange={handleChange}
+                    <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">{t('unit')}</label>
+                    <select
+                      id="unit" value={formData.unit} onChange={handleChange}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500 bg-white"
                     >
-                      <option>kg</option>
-                      <option>grams</option>
-                      <option>pieces</option>
-                      <option>bunches</option>
-                      <option>liters</option>
+                      {unitOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
+                {/* Location — no "Tamil Nadu" hardcoded placeholder */}
                 <div className="md:col-span-2">
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location / Farm Address</label>
-                  <input 
-                    type="text" 
-                    id="location" 
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="e.g. Kanchipuram, Tamil Nadu" 
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">{t('location')}</label>
+                  <input
+                    type="text" id="location"
+                    value={formData.location} onChange={handleChange}
+                    placeholder={t('locationPlaceholder')}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                   />
                 </div>
 
+                {/* Description */}
                 <div className="md:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea 
-                    id="description" 
-                    rows="4" 
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Describe your produce (organic, freshly picked today, sweet variety, etc.)" 
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">{t('description')}</label>
+                  <textarea
+                    id="description" rows="4"
+                    value={formData.description} onChange={handleChange}
+                    placeholder={t('descriptionPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
-                  ></textarea>
+                  />
                 </div>
               </div>
 
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={loading}
                   className="btn-primary flex-grow text-lg flex items-center justify-center disabled:opacity-50"
                 >
                   {loading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Publishing to Supabase...
-                    </>
+                    <><Loader2 className="h-5 w-5 mr-2 animate-spin" />{t('publishing')}</>
                   ) : (
-                    'Publish Produce'
+                    t('publishProduce')
                   )}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => navigate('/farmer/dashboard')}
                   className="btn-secondary sm:w-1/3 text-lg"
                 >
-                  Cancel
+                  {t('saveDraft')}
                 </button>
               </div>
             </form>
@@ -324,4 +307,3 @@ export default function AddProduce() {
     </div>
   );
 }
-
