@@ -9,11 +9,14 @@ import Register from './pages/Register';
 import FarmerDashboard from './pages/FarmerDashboard';
 import AddProduce from './pages/AddProduce';
 import NaturalFertilizers from './pages/NaturalFertilizers';
+import SmartSearch from './pages/SmartSearch';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 function App() {
   return (
-    <AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
       <Router>
         <div className="min-h-screen flex flex-col bg-earth-100 font-sans text-gray-900">
           <Navbar />
@@ -21,6 +24,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/explore" element={<Explore />} />
+              <Route path="/smart-search" element={<SmartSearch />} />
               <Route path="/natural-fertilizers" element={<NaturalFertilizers />} />
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/farmer/:id" element={<FarmerProfile />} />
@@ -33,6 +37,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </LanguageProvider>
   );
 }
 

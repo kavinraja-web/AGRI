@@ -18,8 +18,10 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { initialLivestockFarms } from '../data/fertilizerFarmsData';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function NaturalFertilizers() {
+  const { t } = useLanguage();
   // Favorites / Heart state
   const [favorites, setFavorites] = useState({});
 
@@ -46,21 +48,41 @@ export default function NaturalFertilizers() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: '',
-    ownerName: '',
-    phone: '',
-    farmType: 'Hen / Poultry Farm',
-    typeBadge: 'hen',
-    fertilizerType: '',
-    quantity: '',
-    pricePerUnit: '',
-    location: '',
-    distance: '',
-    deliveryMode: 'Pickup & Farm Delivery',
-    description: ''
+    name: '', ownerName: '', phone: '', farmType: 'Hen / Poultry Farm',
+    typeBadge: 'hen', fertilizerType: '', quantity: '', pricePerUnit: '',
+    location: '', distance: '', deliveryMode: 'Pickup & Farm Delivery', description: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+  const { lang } = useLanguage();
+
+  const farmTranslations = {
+    // Farm Names
+    "Sri Murugan Hen Farm": "ஸ்ரீ முருகன் கோழிப்பண்ணை",
+    "Gokulam Dairy & Cow Farm": "கோகுலம் பசுப் பண்ணை",
+    "Green Pastures Goat Farm": "பசுமை மேய்ச்சல் ஆட்டுப் பண்ணை",
+    "Kongu Organic Fertilizer Farm": "கொங்கு இயற்கை உரப் பண்ணை",
+    
+    // Locations
+    "Kanchipuram, TN": "காஞ்சிபுரம், TN",
+    "Tiruvallur, TN": "திருவள்ளூர், TN",
+    "Chengalpattu, TN": "செங்கல்பட்டு, TN",
+    "Ranipet, TN": "ராணிப்பேட்டை, TN",
+    
+    // Products
+    "Hen Manure + Soil & Sand Blend": "கோழி எரு + மண் & மணல் கலவை",
+    "Cow Dung Vermicompost + Sand Mix": "சாணம் மண்புழு உரம் + மணல்",
+    "Goat Manure Pellets + Soil Blend": "ஆட்டு எரு + மண் கலவை",
+    "Organic Manure + Rich Soil & Sand Mix": "இயற்கை உரம் + வளமான மண் & மணல்",
+    
+    // Tags
+    "Nutrient Rich": "ஊட்டச்சத்து மிக்கது",
+    "Soil Enricher": "மண் வளமூட்டி",
+    "Ready to Use": "பயன்படுத்த தயார்",
+  };
+
+  const trF = (text) => (lang === 'ta' && farmTranslations[text]) ? farmTranslations[text] : text;
 
   const toggleFavorite = (id) => {
     setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
@@ -155,11 +177,11 @@ export default function NaturalFertilizers() {
             <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-between z-10 space-y-6">
               <div className="space-y-3">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
-                  Natural Fertilizers for <br />
-                  <span className="text-[#e2bd66] font-serif italic">Healthier Soil & Better Yields</span>
+                  {t('fertHeroTitle1')} <br />
+                  <span className="text-[#e2bd66] font-serif italic">{t('fertHeroTitle2')}</span>
                 </h1>
                 <p className="text-xs sm:text-sm font-medium text-emerald-200 tracking-wide">
-                  100% Organic • Chemical Free • Farmer Approved
+                  {t('fertHeroSub')}
                 </p>
               </div>
 
@@ -170,8 +192,8 @@ export default function NaturalFertilizers() {
                     <Leaf className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white leading-tight">Boost Soil Health</p>
-                    <p className="text-[10px] text-emerald-200/80 leading-tight">Naturally enrich soil fertility</p>
+                    <p className="text-xs font-bold text-white leading-tight">{t('fertProp1')}</p>
+                    <p className="text-[10px] text-emerald-200/80 leading-tight">{t('fertProp1Sub')}</p>
                   </div>
                 </div>
 
@@ -180,8 +202,8 @@ export default function NaturalFertilizers() {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white leading-tight">Safe & Organic</p>
-                    <p className="text-[10px] text-emerald-200/80 leading-tight">Free from harmful chemicals</p>
+                    <p className="text-xs font-bold text-white leading-tight">{t('fertProp2')}</p>
+                    <p className="text-[10px] text-emerald-200/80 leading-tight">{t('fertProp2Sub')}</p>
                   </div>
                 </div>
 
@@ -190,8 +212,8 @@ export default function NaturalFertilizers() {
                     <Sprout className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white leading-tight">Better Crop Yield</p>
-                    <p className="text-[10px] text-emerald-200/80 leading-tight">Stronger plants, higher productivity</p>
+                    <p className="text-xs font-bold text-white leading-tight">{t('fertProp3')}</p>
+                    <p className="text-[10px] text-emerald-200/80 leading-tight">{t('fertProp3Sub')}</p>
                   </div>
                 </div>
 
@@ -200,8 +222,8 @@ export default function NaturalFertilizers() {
                     <IndianRupee className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white leading-tight">Save More</p>
-                    <p className="text-[10px] text-emerald-200/80 leading-tight">Cost effective & farmer friendly</p>
+                    <p className="text-xs font-bold text-white leading-tight">{t('fertProp4')}</p>
+                    <p className="text-[10px] text-emerald-200/80 leading-tight">{t('fertProp4Sub')}</p>
                   </div>
                 </div>
               </div>
@@ -221,8 +243,8 @@ export default function NaturalFertilizers() {
               <div className="absolute top-6 right-6 w-20 h-20 rounded-full border-2 border-emerald-400/80 bg-[#0a2f1d]/90 backdrop-blur-md p-1 flex flex-col items-center justify-center text-center shadow-lg transform rotate-12">
                 <div className="w-full h-full rounded-full border border-dashed border-emerald-300 flex flex-col items-center justify-center">
                   <Leaf className="w-5 h-5 text-emerald-400" />
-                  <span className="text-[8px] font-black uppercase text-white tracking-tighter mt-0.5">NATURE</span>
-                  <span className="text-[7px] font-bold uppercase text-emerald-300 tracking-widest">APPROVED</span>
+                  <span className="text-[8px] font-black uppercase text-white tracking-tighter mt-0.5">{t('natureApproved')}</span>
+                  <span className="text-[7px] font-bold uppercase text-emerald-300 tracking-widest">{t('approved')}</span>
                 </div>
               </div>
             </div>
@@ -241,7 +263,7 @@ export default function NaturalFertilizers() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search fertilizer or location..."
+                placeholder={t('searchFertilizer')}
                 className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-gray-50/70 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition-all"
               />
               {searchQuery && (
@@ -261,7 +283,7 @@ export default function NaturalFertilizers() {
                     : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <Grid className="w-3.5 h-3.5" /> All Blends
+                <Grid className="w-3.5 h-3.5" /> {t('allBlends')}
               </button>
 
               <button
@@ -272,7 +294,7 @@ export default function NaturalFertilizers() {
                     : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                🐔 Hen Manure + Sand
+                {t('henManure')}
               </button>
 
               <button
@@ -283,7 +305,7 @@ export default function NaturalFertilizers() {
                     : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                🐮 Cow Dung + Soil
+                {t('cowDung')}
               </button>
 
               <button
@@ -294,14 +316,14 @@ export default function NaturalFertilizers() {
                     : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                🐐 Goat Pellets + Sand
+                {t('goatPellets')}
               </button>
 
               <button
                 onClick={() => setShowRegisterModal(true)}
                 className="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-forest-900 transition-all ml-auto flex items-center gap-1 shadow-xs"
               >
-                <PlusCircle className="w-3.5 h-3.5" /> List Farm
+                <PlusCircle className="w-3.5 h-3.5" /> {t('listFarm')}
               </button>
             </div>
 
@@ -313,9 +335,9 @@ export default function NaturalFertilizers() {
           {filteredFarms.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 space-y-4">
               <Sprout className="w-12 h-12 text-gray-300 mx-auto" />
-              <h3 className="text-lg font-bold text-gray-800">No organic fertilizers matched your search</h3>
+              <h3 className="text-lg font-bold text-gray-800">{t('noFertsFound')}</h3>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }} className="btn-secondary text-xs">
-                Clear Filters
+                {t('clearFilters')}
               </button>
             </div>
           ) : (
@@ -330,13 +352,13 @@ export default function NaturalFertilizers() {
                     <div className="relative h-48 bg-gray-100 overflow-hidden">
                       <img 
                         src={farm.image} 
-                        alt={farm.fertilizerType} 
+                        alt={trF(farm.fertilizerType)} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       
                       {/* Organic Badge top-left */}
                       <span className="absolute top-3 left-3 bg-[#0a2f1d]/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <Leaf className="w-3 h-3 text-emerald-400" /> Organic
+                        <Leaf className="w-3 h-3 text-emerald-400" /> {t('organic')}
                       </span>
 
                       {/* Heart Wishlist Icon top-right */}
@@ -351,7 +373,7 @@ export default function NaturalFertilizers() {
 
                       {/* Distance Badge bottom-right */}
                       <span className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-amber-300" /> {farm.distance} km away
+                        <MapPin className="w-3 h-3 text-amber-300" /> {farm.distance} {t('kmAway')}
                       </span>
                     </div>
 
@@ -359,12 +381,12 @@ export default function NaturalFertilizers() {
                     <div className="p-5 space-y-3">
                       <div>
                         <h3 className="font-bold text-gray-900 text-base leading-snug group-hover:text-emerald-800 transition-colors">
-                          {farm.fertilizerType}
+                          {trF(farm.fertilizerType)}
                         </h3>
                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <span className="font-semibold text-emerald-800">{farm.name}</span>
+                          <span className="font-semibold text-emerald-800">{trF(farm.name)}</span>
                           <span>•</span>
-                          <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3 text-gray-400" /> {farm.location}</span>
+                          <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3 text-gray-400" /> {trF(farm.location)}</span>
                         </p>
                       </div>
 
@@ -372,7 +394,7 @@ export default function NaturalFertilizers() {
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {(farm.tags || ['Nutrient Rich', 'Soil Enricher', 'Ready to Use']).map((tag, i) => (
                           <span key={i} className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                            {tag}
+                            {trF(tag)}
                           </span>
                         ))}
                       </div>
@@ -380,9 +402,9 @@ export default function NaturalFertilizers() {
                       {/* Stock Available Row */}
                       <div className="flex items-center justify-between text-xs text-gray-600 pt-2 border-t border-gray-100">
                         <span className="flex items-center gap-1 font-medium text-gray-500">
-                          <Sprout className="w-3.5 h-3.5 text-emerald-700" /> Stock Available
+                          <Sprout className="w-3.5 h-3.5 text-emerald-700" /> {t('stockAvailable')}
                         </span>
-                        <span className="font-bold text-gray-900">{farm.quantity} Tons</span>
+                        <span className="font-bold text-gray-900">{farm.quantity} {t('tons')}</span>
                       </div>
                     </div>
                   </div>
@@ -392,7 +414,7 @@ export default function NaturalFertilizers() {
                     <div className="pt-2 mb-3">
                       <p className="text-xl font-extrabold text-gray-900">
                         ₹ {farm.pricePerUnit.toLocaleString()}
-                        <span className="text-xs font-normal text-gray-500"> / Ton</span>
+                        <span className="text-xs font-normal text-gray-500"> {t('perTon')}</span>
                       </p>
                     </div>
 
@@ -401,7 +423,7 @@ export default function NaturalFertilizers() {
                         href={`tel:${farm.phone}`}
                         className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 py-2.5 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 transition-all"
                       >
-                        <Phone className="w-3.5 h-3.5 text-gray-700" /> Call
+                        <Phone className="w-3.5 h-3.5 text-gray-700" /> {t('call')}
                       </a>
 
                       <button
@@ -412,7 +434,7 @@ export default function NaturalFertilizers() {
                         }}
                         className="bg-[#0a2f1d] hover:bg-[#12422b] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
                       >
-                        <ShoppingBag className="w-3.5 h-3.5" /> Buy Now
+                        <ShoppingBag className="w-3.5 h-3.5" /> {t('buyNow')}
                       </button>
                     </div>
                   </div>
@@ -432,8 +454,8 @@ export default function NaturalFertilizers() {
                 <Truck className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">Fast Delivery</h4>
-                <p className="text-xs text-gray-500">Timely delivery to your location</p>
+                <h4 className="font-bold text-gray-900 text-sm">{t('fastDelivery')}</h4>
+                <p className="text-xs text-gray-500">{t('fastDeliverySub')}</p>
               </div>
             </div>
 
@@ -442,8 +464,8 @@ export default function NaturalFertilizers() {
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">Quality Assured</h4>
-                <p className="text-xs text-gray-500">Lab tested & certified organic</p>
+                <h4 className="font-bold text-gray-900 text-sm">{t('qualityAssured')}</h4>
+                <p className="text-xs text-gray-500">{t('qualityAssuredSub')}</p>
               </div>
             </div>
 
@@ -452,8 +474,8 @@ export default function NaturalFertilizers() {
                 <Headphones className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">Farmer Support</h4>
-                <p className="text-xs text-gray-500">We're here to help you grow</p>
+                <h4 className="font-bold text-gray-900 text-sm">{t('farmerSupport')}</h4>
+                <p className="text-xs text-gray-500">{t('farmerSupportSub')}</p>
               </div>
             </div>
 
@@ -462,8 +484,8 @@ export default function NaturalFertilizers() {
                 <IndianRupee className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">Best Prices</h4>
-                <p className="text-xs text-gray-500">Direct from farms, saves more</p>
+                <h4 className="font-bold text-gray-900 text-sm">{t('bestPrices')}</h4>
+                <p className="text-xs text-gray-500">{t('bestPricesSub')}</p>
               </div>
             </div>
 

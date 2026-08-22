@@ -2,42 +2,30 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sprout, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { sendOtp, verifyOtp, isConfigured } = useAuth();
+  const { sendOtp, verifyOtp } = useAuth();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState('');
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    farmName: '',
-    location: ''
-  });
+  const [formData, setFormData] = useState({ name: '', phone: '', farmName: '', location: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
-  };
+  const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     try {
-      await sendOtp({
-        fullName: formData.name,
-        phone: formData.phone,
-        farmName: formData.farmName,
-        location: formData.location
-      });
+      await sendOtp({ fullName: formData.name, phone: formData.phone, farmName: formData.farmName, location: formData.location });
       setStep(2);
     } catch (err) {
-      console.error('Failed to send OTP:', err);
-      setError(err.message || 'Failed to send OTP. Please check your credentials.');
+      setError(err.message || 'Failed to send OTP.');
     } finally {
       setLoading(false);
     }
@@ -47,12 +35,10 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     try {
       await verifyOtp({ phone: formData.phone, token: otp });
       navigate('/farmer/dashboard');
     } catch (err) {
-      console.error('Verification failed:', err);
       setError(err.message || 'Invalid OTP.');
     } finally {
       setLoading(false);
@@ -66,10 +52,8 @@ export default function Register() {
           <div className="mx-auto h-12 w-12 bg-forest-50 rounded-xl flex items-center justify-center mb-4">
             <Sprout className="h-8 w-8 text-forest-600" />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Join as a Farmer</h2>
-          <p className="text-gray-500">
-            {isConfigured ? 'Create your Supabase-powered farmer account.' : 'Join FarmConnect and showcase produce directly.'}
-          </p>
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">{t('joinTitle')}</h2>
+          <p className="text-gray-500">{t('joinSubtitle')}</p>
         </div>
 
         {error && (
@@ -78,142 +62,87 @@ export default function Register() {
             <span>{error}</span>
           </div>
         )}
-        
+
         {step === 1 ? (
           <form className="mt-8 space-y-6" onSubmit={handleSendOtp}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input 
-                  id="name" 
-                  type="text" 
-                  required 
-                  value={formData.name}
-                  onChange={handleChange}
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">{t('fullName')}</label>
+                <input
+                  id="name" type="text" required value={formData.name} onChange={handleChange}
                   placeholder="e.g. Ravi Kumar"
-                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 />
               </div>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input 
-                  id="phone" 
-                  type="tel" 
-                  required 
-                  value={formData.phone}
-                  onChange={handleChange}
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">{t('phoneNumber')}</label>
+                <input
+                  id="phone" type="tel" required value={formData.phone} onChange={handleChange}
                   placeholder="+91 98765 43210"
-                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="farmName" className="block text-sm font-medium text-gray-700 mb-1">Farm Name (Optional)</label>
-                <input 
-                  id="farmName" 
-                  type="text" 
-                  value={formData.farmName}
-                  onChange={handleChange}
+                <label htmlFor="farmName" className="block text-sm font-medium text-gray-700 mb-1">{t('farmName')}</label>
+                <input
+                  id="farmName" type="text" value={formData.farmName} onChange={handleChange}
                   placeholder="e.g. Green Acres"
-                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 />
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
-                <input 
-                  id="location" 
-                  type="text" 
-                  required 
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g. Kanchipuram, Tamil Nadu" 
-                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500" 
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">{t('farmLocation')}</label>
+                <input
+                  id="location" type="text" required value={formData.location} onChange={handleChange}
+                  placeholder="e.g. Kanchipuram, Tamil Nadu"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
                 />
               </div>
             </div>
 
             <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input id="terms" name="terms" type="checkbox" required className="h-4 w-4 text-forest-600 focus:ring-forest-500 border-gray-300 rounded" />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="terms" className="font-medium text-gray-700">I agree to the terms and privacy policy.</label>
-              </div>
+              <input id="terms" name="terms" type="checkbox" required className="h-4 w-4 mt-0.5 text-forest-600 focus:ring-forest-500 border-gray-300 rounded" />
+              <label htmlFor="terms" className="ml-3 text-sm font-medium text-gray-700">{t('agreeTerms')}</label>
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Sending OTP...
-                </>
-              ) : (
-                'Send OTP'
-              )}
+            <button type="submit" disabled={loading} className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50">
+              {loading ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> {t('sendingOtp') || 'Sending OTP...'}</> : (t('sendOtp') || 'Send OTP')}
             </button>
           </form>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">6-Digit OTP</label>
-                <input
-                  id="otp"
-                  name="otp"
-                  type="text"
-                  required
-                  maxLength={6}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 text-center tracking-widest font-mono text-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
-                  placeholder="------"
-                />
-              </div>
+            <div>
+              <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">{t('otpLabel') || '6-Digit OTP'}</label>
+              <input
+                id="otp" name="otp" type="text" required maxLength={6}
+                value={otp} onChange={(e) => setOtp(e.target.value)}
+                className="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 text-center tracking-widest font-mono text-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
+                placeholder="------"
+              />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading || otp.length < 6}
-              className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify & Create Account'
-              )}
+            <button type="submit" disabled={loading || otp.length < 6} className="w-full btn-primary text-lg flex justify-center items-center py-3 disabled:opacity-50">
+              {loading ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> {t('verifying') || 'Verifying...'}</> : (t('verifyCreate') || 'Verify & Create Account')}
             </button>
-            
+
             <div className="text-center mt-4">
-              <button 
-                type="button" 
-                onClick={() => setStep(1)}
-                className="text-sm font-medium text-forest-600 hover:text-forest-500"
-              >
-                Go Back
+              <button type="button" onClick={() => setStep(1)} className="text-sm font-medium text-forest-600 hover:text-forest-500">
+                {t('goBack') || 'Go Back'}
               </button>
             </div>
           </form>
         )}
-        
+
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-forest-600 hover:text-forest-500">
-              Log in
-            </Link>
+            {t('alreadyHaveAccount')}{' '}
+            <Link to="/login" className="font-medium text-forest-600 hover:text-forest-500">{t('login')}</Link>
           </p>
         </div>
       </div>
     </div>
   );
 }
-
