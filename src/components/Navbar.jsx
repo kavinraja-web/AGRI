@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
-import { Sprout, Menu, X, Leaf, Search } from 'lucide-react';
+import { Sprout, Menu, X, Leaf, Search, User, LogOut, LayoutDashboard, Database } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, farmerProfile, logout, isConfigured } = useAuth();
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2.5">
               <div className="bg-forest-50 p-2 rounded-xl text-forest-700 flex items-center justify-center">
                 <Sprout className="h-6 w-6 text-forest-700" />
@@ -19,6 +21,14 @@ export default function Navbar() {
                 <span className="text-[10px] text-gray-500 font-medium tracking-tight mt-0.5">Grow Better. Together.</span>
               </div>
             </Link>
+            
+            {/* Supabase status badge */}
+            <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+              isConfigured ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+            }`}>
+              <Database className="h-3 w-3" />
+              {isConfigured ? 'Supabase Live' : 'Demo DB'}
+            </span>
           </div>
           
           <div className="hidden md:flex items-center space-x-5 text-sm font-medium">
@@ -40,20 +50,52 @@ export default function Navbar() {
             </Link>
 
             <a href="#how-it-works" className="text-gray-700 hover:text-forest-700 transition-colors">How It Works</a>
-            <Link to="/login" className="text-gray-700 hover:text-forest-700 transition-colors">For Farmers</Link>
-            
-            <div className="flex items-center gap-3 pl-4">
-              <Link to="/login" className="px-4 py-2 rounded-full border border-gray-200 text-gray-700 font-semibold text-xs hover:bg-gray-50 transition-colors">
-                Login
-              </Link>
-              <Link to="/register" className="bg-forest-800 text-white px-5 py-2 rounded-xl text-xs font-semibold hover:bg-forest-900 transition-all shadow-xs flex items-center gap-1.5">
-                <Sprout className="w-3.5 h-3.5" />
-                <span>Join as Farmer</span>
-              </Link>
-            </div>
+
+            {user || farmerProfile ? (
+              <div className="flex items-center gap-4 border-l border-gray-200 pl-6">
+                <Link 
+                  to="/farmer/dashboard" 
+                  className="flex items-center gap-2 text-gray-700 hover:text-forest-600 font-medium transition-colors"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-forest-600" />
+                  Dashboard
+                </Link>
+
+                <div className="flex items-center gap-2 bg-forest-50 py-1.5 px-3 rounded-full border border-forest-100">
+                  <div className="w-7 h-7 rounded-full overflow-hidden bg-forest-200 flex items-center justify-center text-xs font-bold text-forest-800">
+                    {farmerProfile?.image || farmerProfile?.avatar_url ? (
+                      <img src={farmerProfile.image || farmerProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
+                  </div>
+                  <span className="text-sm font-semibold text-forest-900">
+                    {farmerProfile?.name || farmerProfile?.full_name || 'Farmer'}
+                  </span>
+                </div>
+
+                <button 
+                  onClick={logout}
+                  title="Sign out"
+                  className="text-gray-400 hover:text-red-600 p-2 rounded-lg transition-colors"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+                <Link to="/login" className="px-4 py-2 rounded-full border border-gray-200 text-gray-700 font-semibold text-xs hover:bg-gray-50 transition-colors">
+                  Login
+                </Link>
+                <Link to="/register" className="bg-forest-800 text-white px-5 py-2 rounded-xl text-xs font-semibold hover:bg-forest-900 transition-all shadow-xs flex items-center gap-1.5">
+                  <Sprout className="w-3.5 h-3.5" />
+                  <span>Join as Farmer</span>
+                </Link>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center md:hidden gap-2">
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600 hover:text-gray-900 p-2">
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -78,14 +120,34 @@ export default function Navbar() {
             <span className="bg-amber-400 text-forest-900 text-xs font-extrabold px-2 py-0.5 rounded-full">NEW</span>
           </Link>
           <a href="#how-it-works" onClick={() => setIsOpen(false)} className="block text-gray-600 font-medium py-2">How it Works</a>
-          <Link to="/login" onClick={() => setIsOpen(false)} className="block text-gray-600 font-medium py-2">For Farmers</Link>
           <hr className="border-gray-100" />
-          <Link to="/login" onClick={() => setIsOpen(false)} className="block text-forest-700 font-medium py-2">Login</Link>
-          <Link to="/register" onClick={() => setIsOpen(false)} className="block text-center bg-forest-600 text-white px-5 py-3 rounded-full font-medium mt-2">
-            Join as Farmer
-          </Link>
+          
+          {user || farmerProfile ? (
+            <>
+              <Link to="/farmer/dashboard" onClick={() => setIsOpen(false)} className="block text-forest-700 font-medium py-2">
+                Dashboard ({farmerProfile?.name || 'Farmer'})
+              </Link>
+              <Link to="/farmer/add-produce" onClick={() => setIsOpen(false)} className="block text-forest-700 font-medium py-2">
+                + Add Produce
+              </Link>
+              <button 
+                onClick={() => { logout(); setIsOpen(false); }}
+                className="w-full text-left text-red-600 font-medium py-2"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setIsOpen(false)} className="block text-forest-700 font-medium py-2">Login</Link>
+              <Link to="/register" onClick={() => setIsOpen(false)} className="block text-center bg-forest-600 text-white px-5 py-3 rounded-full font-medium mt-2">
+                Join as Farmer
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>
   );
 }
+
