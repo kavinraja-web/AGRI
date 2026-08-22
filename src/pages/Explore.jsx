@@ -4,7 +4,7 @@ import { Search, Filter, SlidersHorizontal, Loader2, MapPin } from 'lucide-react
 import ProductCard from '../components/ProductCard';
 import { getProducts } from '../services/productService';
 import { useLanguage } from '../context/LanguageContext';
-import { calculateDistanceInMiles } from '../utils/distance';
+import { calculateDistanceInKm } from '../utils/distance';
 
 // Category list with translation keys — value stays English for DB filter
 const CATEGORY_OPTIONS = [
@@ -37,6 +37,19 @@ export default function Explore() {
   const [userLocation, setUserLocation]       = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
 
+  // Automatically request location if permitted, or prompt once
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        if (result.state === 'granted') {
+          navigator.geolocation.getCurrentPosition(pos => {
+            setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          });
+        }
+      });
+    }
+  }, []);
+
   useEffect(() => {
     let active = true;
     async function loadData() {
@@ -48,10 +61,10 @@ export default function Explore() {
         if (userLocation) {
           data = data.map(product => {
             if (product.lat && product.lng) {
-              const dist = calculateDistanceInMiles(userLocation.lat, userLocation.lng, product.lat, product.lng);
+              const dist = calculateDistanceInKm(userLocation.lat, userLocation.lng, product.lat, product.lng);
               return { 
                 ...product, 
-                distance: `${dist.toFixed(1)} miles away`,
+                distance: `${dist.toFixed(1)} km away`,
                 distanceValue: dist 
               };
             }

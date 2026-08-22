@@ -1,7 +1,7 @@
-export function calculateDistanceInMiles(lat1, lon1, lat2, lon2) {
+export function calculateDistanceInKm(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
   
-  const R = 3958.8; // Radius of the Earth in miles
+  const R = 6371; // Radius of the Earth in kilometers
   const rlat1 = lat1 * (Math.PI/180);
   const rlat2 = lat2 * (Math.PI/180);
   const difflat = rlat2 - rlat1;
