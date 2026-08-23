@@ -21,6 +21,7 @@ export default function AddProduce() {
     quantity: '',
     unit: 'kg',
     location: farmerProfile?.location || '',
+    isGps: false,
     description: '',
     status: 'Available'
   });
@@ -133,7 +134,17 @@ export default function AddProduce() {
       }
 
       const farmerId = user?.id || farmerProfile?.id || 1;
-      await createProduct({ ...formData, lat: finalLat, lng: finalLng, farmerId, imageUrl });
+      const finalLocationText = formData.location ? 
+        (formData.isGps ? `GPS Location: ${formData.location}` : `Farm Location: ${formData.location}`) : '';
+
+      await createProduct({ 
+        ...formData, 
+        location: finalLocationText,
+        lat: finalLat, 
+        lng: finalLng, 
+        farmerId, 
+        imageUrl 
+      });
 
       setSuccess(true);
       setTimeout(() => navigate('/farmer/dashboard'), 1200);
@@ -311,26 +322,71 @@ export default function AddProduce() {
                   </div>
                 </div>
 
-                {/* Location */}
-                <div className="md:col-span-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700">{t('location')}</label>
-                    <button
-                      type="button"
-                      onClick={handleGetLocation}
-                      disabled={gettingLocation}
-                      className="text-forest-600 text-sm font-medium flex items-center hover:text-forest-700 disabled:opacity-50"
-                    >
-                      {gettingLocation ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
-                      Use My Location
-                    </button>
+                {/* Location Options */}
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <label className="block text-sm font-bold text-gray-900 mb-3">{t('location')}</label>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white flex-1 hover:border-forest-300 transition-colors">
+                      <input 
+                        type="radio" 
+                        name="locationMode" 
+                        value="manual" 
+                        checked={!formData.isGps} 
+                        onChange={() => setFormData(prev => ({ ...prev, isGps: false }))}
+                        className="text-forest-600 focus:ring-forest-500 w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Enter Farm Location Manually</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white flex-1 hover:border-forest-300 transition-colors">
+                      <input 
+                        type="radio" 
+                        name="locationMode" 
+                        value="gps" 
+                        checked={formData.isGps} 
+                        onChange={() => {
+                          setFormData(prev => ({ ...prev, isGps: true }));
+                          handleGetLocation(); // trigger GPS automatically when selected
+                        }}
+                        className="text-forest-600 focus:ring-forest-500 w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Use My Location (GPS)</span>
+                    </label>
                   </div>
-                  <input
-                    type="text" id="location"
-                    value={formData.location} onChange={handleChange}
-                    placeholder={t('locationPlaceholder')}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
-                  />
+
+                  {!formData.isGps ? (
+                    <div>
+                      <input
+                        type="text" id="location"
+                        value={formData.location} onChange={handleChange}
+                        placeholder="e.g. Namakkal, Tamil Nadu"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500 bg-white"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">We will automatically convert this address to map coordinates.</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 bg-white p-3 border border-emerald-100 rounded-xl">
+                      {gettingLocation ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                      ) : (
+                        <MapPin className="w-5 h-5 text-emerald-600" />
+                      )}
+                      <input
+                        type="text" id="location"
+                        value={formData.location} onChange={handleChange}
+                        placeholder="GPS Address will appear here"
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-gray-800 p-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGetLocation}
+                        disabled={gettingLocation}
+                        className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100"
+                      >
+                        Retake GPS
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}

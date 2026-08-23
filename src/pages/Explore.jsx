@@ -52,7 +52,7 @@ export default function Explore() {
               const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
               return { 
                 ...product, 
-                distance: `${dist.toFixed(1)} km away`,
+                distance: `📍 ${dist.toFixed(1)} km away`,
                 distanceValue: dist 
               };
             }

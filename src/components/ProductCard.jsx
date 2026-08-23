@@ -13,7 +13,7 @@ export default function ProductCard({ product }) {
   let displayDistance = product.distance;
   if (globalLocation && product.lat && product.lng) {
     const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
-    displayDistance = `${dist.toFixed(1)} km away`;
+    displayDistance = `📍 ${dist.toFixed(1)} km away`;
   }
 
   return (
