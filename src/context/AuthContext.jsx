@@ -57,17 +57,19 @@ export function AuthProvider({ children }) {
 
     loadSession();
 
-    // Try to get location automatically if permissions are already granted
+    // Automatically ask for location so distances can be calculated
     if (navigator.geolocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then(result => {
-        if (result.state === 'granted') {
-          navigator.geolocation.getCurrentPosition(pos => {
-            if (mounted) {
-              setGlobalLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            }
-          });
-        }
-      });
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          if (mounted) {
+            setGlobalLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          }
+        },
+        err => {
+          console.warn('Auto location failed or denied:', err);
+        },
+        { timeout: 10000 }
+      );
     }
 
     return () => {
