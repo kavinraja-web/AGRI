@@ -73,7 +73,7 @@ export default function FarmerProfile() {
                 </h1>
                 <p className="text-gray-500 flex items-center mb-4">
                   <MapPin className="h-4 w-4 mr-1 text-forest-600" />
-                  {farmer.location} • {farmer.distance || `${farmer.distanceValue || 15} km away`}
+                  {farmer.location} {farmer.distance ? `• ${farmer.distance}` : ''}
                 </p>
                 <p className="text-gray-700 bg-earth-100 px-3 py-1.5 rounded-lg inline-block text-sm font-medium">
                   {farmer.experience || 'Experienced Farmer'}

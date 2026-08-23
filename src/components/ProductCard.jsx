@@ -2,9 +2,19 @@ import { Link } from 'react-router-dom';
 import { MapPin, User, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { translateProductName } from '../utils/translateName';
+import { useAuth } from '../context/AuthContext';
+import { calculateDistanceInKm } from '../utils/distance';
 
 export default function ProductCard({ product }) {
   const { lang, t } = useLanguage();
+  const { globalLocation } = useAuth();
+
+  // Calculate distance if product has lat/lng and user location is available
+  let displayDistance = product.distance;
+  if (globalLocation && product.lat && product.lng) {
+    const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
+    displayDistance = `📍 ${dist.toFixed(1)} km away`;
+  }
 
   return (
     <Link to={`/product/${product.id}`} className="group card flex flex-col overflow-hidden h-full">
@@ -43,9 +53,9 @@ export default function ProductCard({ product }) {
               <MapPin className="h-4 w-4 mr-2 text-forest-500 flex-shrink-0" />
               <span className="truncate">{product.location}</span>
             </div>
-            {product.distance && (
+            {displayDistance && (
               <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md ml-2 whitespace-nowrap">
-                {product.distance}
+                {displayDistance}
               </span>
             )}
           </div>

@@ -21,6 +21,7 @@ export default function AddProduce() {
     quantity: '',
     unit: 'kg',
     location: farmerProfile?.location || '',
+    isGps: false,
     description: '',
     status: 'Available'
   });
@@ -32,6 +33,52 @@ export default function AddProduce() {
   const [success, setSuccess] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const searchTimeoutRef = useRef(null);
+
+  const handleLocationSearchChange = (e) => {
+    const val = e.target.value;
+    // Clear lat/lng when typing to require a new selection
+    setFormData(prev => ({ ...prev, location: val, lat: null, lng: null }));
+    
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    
+    if (val.length > 2) {
+      setIsSearchingLocation(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&addressdetails=1&limit=5&email=hello@agricul.com`);
+          const data = await res.json();
+          setLocationSuggestions(data);
+        } catch (err) {
+          console.error("Geocoding search error:", err);
+        } finally {
+          setIsSearchingLocation(false);
+        }
+      }, 500);
+    } else {
+      setLocationSuggestions([]);
+      setIsSearchingLocation(false);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    const address = suggestion.address || {};
+    const city = address.city || address.town || address.village || address.county || '';
+    const state = address.state || '';
+    const country = address.country || '';
+    const name = suggestion.name || city;
+    const formatted = [name, city, state, country].filter((v, i, a) => v && a.indexOf(v) === i).join(', ');
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      location: formatted || suggestion.display_name,
+      lat: parseFloat(suggestion.lat),
+      lng: parseFloat(suggestion.lon)
+    }));
+    setLocationSuggestions([]);
+  };
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -110,13 +157,40 @@ export default function AddProduce() {
     setError(null);
 
     try {
+      let finalLat = formData.lat;
+      let finalLng = formData.lng;
+
+      // Automatically convert typed location name into GPS coordinates if missing
+      if (!finalLat && !finalLng && formData.location) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(formData.location)}&email=hello@agricul.com`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            finalLat = parseFloat(data[0].lat);
+            finalLng = parseFloat(data[0].lon);
+          }
+        } catch (geoErr) {
+          console.warn("Failed to forward geocode typed location:", geoErr);
+        }
+      }
+
       let imageUrl = 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600&h=400';
       if (selectedFile) {
         imageUrl = await uploadProduceImage(selectedFile);
       }
 
       const farmerId = user?.id || farmerProfile?.id || 1;
-      await createProduct({ ...formData, farmerId, imageUrl });
+      const finalLocationText = formData.location ? 
+        (formData.isGps ? `GPS Location: ${formData.location}` : `Farm Location: ${formData.location}`) : '';
+
+      await createProduct({ 
+        ...formData, 
+        location: finalLocationText,
+        lat: finalLat, 
+        lng: finalLng, 
+        farmerId, 
+        imageUrl 
+      });
 
       setSuccess(true);
       setTimeout(() => navigate('/farmer/dashboard'), 1200);
@@ -294,26 +368,114 @@ export default function AddProduce() {
                   </div>
                 </div>
 
-                {/* Location */}
-                <div className="md:col-span-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700">{t('location')}</label>
-                    <button
-                      type="button"
-                      onClick={handleGetLocation}
-                      disabled={gettingLocation}
-                      className="text-forest-600 text-sm font-medium flex items-center hover:text-forest-700 disabled:opacity-50"
-                    >
-                      {gettingLocation ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
-                      Use My Location
-                    </button>
+                {/* Location Options */}
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <label className="block text-sm font-bold text-gray-900 mb-3">{t('location')}</label>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white flex-1 hover:border-forest-300 transition-colors">
+                      <input 
+                        type="radio" 
+                        name="locationMode" 
+                        value="manual" 
+                        checked={!formData.isGps} 
+                        onChange={() => setFormData(prev => ({ ...prev, isGps: false }))}
+                        className="text-forest-600 focus:ring-forest-500 w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Enter Farm Location Manually</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white flex-1 hover:border-forest-300 transition-colors">
+                      <input 
+                        type="radio" 
+                        name="locationMode" 
+                        value="gps" 
+                        checked={formData.isGps} 
+                        onChange={() => {
+                          setFormData(prev => ({ ...prev, isGps: true }));
+                          handleGetLocation(); // trigger GPS automatically when selected
+                        }}
+                        className="text-forest-600 focus:ring-forest-500 w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Use My Location (GPS)</span>
+                    </label>
                   </div>
-                  <input
-                    type="text" id="location"
-                    value={formData.location} onChange={handleChange}
-                    placeholder={t('locationPlaceholder')}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500"
-                  />
+
+                  {!formData.isGps ? (
+                    <div className="relative">
+                      <input
+                        type="text" id="location"
+                        value={formData.location} onChange={handleLocationSearchChange}
+                        placeholder="e.g. Namakkal, Tamil Nadu"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-forest-500 focus:border-forest-500 bg-white"
+                        autoComplete="off"
+                      />
+                      {isSearchingLocation && (
+                        <div className="absolute right-4 top-3.5">
+                          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                        </div>
+                      )}
+                      {locationSuggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                          {locationSuggestions.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleSelectSuggestion(suggestion)}
+                              className="w-full text-left px-4 py-3 hover:bg-forest-50 border-b border-gray-100 last:border-0 focus:bg-forest-50 focus:outline-none transition-colors"
+                            >
+                              <div className="flex items-start">
+                                <MapPin className="w-4 h-4 text-forest-600 mt-1 mr-3 flex-shrink-0" />
+                                <div>
+                                  <p className="font-semibold text-gray-900 text-sm">{suggestion.name || suggestion.display_name.split(',')[0]}</p>
+                                  <p className="text-xs text-gray-500 line-clamp-1">{suggestion.display_name}</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {!formData.lat && <p className="text-xs text-gray-500 mt-2">Search and select your exact farm location from the list.</p>}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 bg-white p-3 border border-emerald-100 rounded-xl">
+                      {gettingLocation ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                      ) : (
+                        <MapPin className="w-5 h-5 text-emerald-600" />
+                      )}
+                      <input
+                        type="text" id="location"
+                        value={formData.location} onChange={handleChange}
+                        placeholder="GPS Address will appear here"
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-gray-800 p-0"
+                        readOnly
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGetLocation}
+                        disabled={gettingLocation}
+                        className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100"
+                      >
+                        Retake GPS
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Map Preview */}
+                  {formData.lat && formData.lng && (
+                    <div className="mt-4 w-full h-48 rounded-xl overflow-hidden border border-gray-200 bg-gray-100">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        marginHeight="0"
+                        marginWidth="0"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${formData.lng-0.01},${formData.lat-0.01},${formData.lng+0.01},${formData.lat+0.01}&layer=mapnik&marker=${formData.lat},${formData.lng}`}
+                        title="Farm Location Preview"
+                      ></iframe>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}
