@@ -51,13 +51,13 @@ export default function Navbar() {
               </div>
             </Link>
           </div>
-          {/* Desktop Center Nav - Dynamically hides active tab and shifts right */}
+          {/* Desktop Center Nav */}
           <div className="hidden lg:flex items-center space-x-8 text-sm ml-auto mr-8">
-            {path !== '/' && <NavItem to="/" label={t('home')} />}
-            {path !== '/explore' && <NavItem to="/explore" label={t('explore')} />}
-            {path !== '/smart-search' && <NavItem to="/smart-search" label={lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'} icon={Search} />}
-            {path !== '/bucket-list' && <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} />}
-            {path !== '/natural-fertilizers' && <NavItem to="/natural-fertilizers" label={t('naturalFertilizers')} badge="NEW" />}
+            <NavItem to="/" label={t('home')} active={path === '/'} />
+            <NavItem to="/explore" label={t('explore')} active={path === '/explore'} />
+            <NavItem to="/smart-search" label={lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'} icon={Search} active={path === '/smart-search'} />
+            <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} active={path === '/bucket-list'} />
+            <NavItem to="/natural-fertilizers" label={t('naturalFertilizers')} badge="NEW" active={path === '/natural-fertilizers'} />
           </div>
 
           {/* Desktop Right Side */}
@@ -145,41 +145,39 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isOpen && (
         <div className="lg:hidden bg-white border-b border-gray-100 px-4 pt-2 pb-6 space-y-4 shadow-lg absolute w-full left-0 animate-[slideDown_0.2s_ease-out]">
-          {path !== '/' && <Link to="/" onClick={() => setIsOpen(false)} className="block font-medium py-2 text-gray-600">{t('home')}</Link>}
-          {path !== '/explore' && <Link to="/explore" onClick={() => setIsOpen(false)} className="block font-medium py-2 text-gray-600">{t('explore')}</Link>}
+          <Link to="/" onClick={() => setIsOpen(false)} className={`block font-medium py-2 ${path === '/' ? 'text-forest-700' : 'text-gray-600'}`}>
+            {t('home')}
+          </Link>
+          <Link to="/explore" onClick={() => setIsOpen(false)} className={`block font-medium py-2 ${path === '/explore' ? 'text-forest-700' : 'text-gray-600'}`}>
+            {t('explore')}
+          </Link>
           
-          {path !== '/smart-search' && (
-            <Link
-              to="/smart-search"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 font-medium py-2 text-gray-600"
-            >
-              <Search className="w-4 h-4" />
-              {lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'}
-            </Link>
-          )}
+          <Link
+            to="/smart-search"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center gap-2 font-medium py-2 ${path === '/smart-search' ? 'text-forest-700' : 'text-gray-600'}`}
+          >
+            <Search className="w-4 h-4" />
+            {lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'}
+          </Link>
 
-          {path !== '/bucket-list' && (
-            <Link
-              to="/bucket-list"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 font-medium py-2 text-gray-600"
-            >
-              <ShoppingBasket className="w-4 h-4" />
-              {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
-            </Link>
-          )}
+          <Link
+            to="/bucket-list"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center gap-2 font-medium py-2 ${path === '/bucket-list' ? 'text-forest-700' : 'text-gray-600'}`}
+          >
+            <ShoppingBasket className="w-4 h-4" />
+            {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
+          </Link>
 
-          {path !== '/natural-fertilizers' && (
-            <Link
-              to="/natural-fertilizers"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between text-gray-600 font-medium py-2"
-            >
-              <span>{t('naturalFertilizers')}</span>
-              <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-sm">NEW</span>
-            </Link>
-          )}
+          <Link
+            to="/natural-fertilizers"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center justify-between font-medium py-2 ${path === '/natural-fertilizers' ? 'text-forest-700' : 'text-gray-600'}`}
+          >
+            <span>{t('naturalFertilizers')}</span>
+            <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-sm">NEW</span>
+          </Link>
 
           <hr className="border-gray-100" />
 
