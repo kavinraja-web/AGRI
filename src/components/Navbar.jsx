@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sprout, Menu, X, Leaf, Search, User, LogOut, LayoutDashboard, Database, Globe, ChevronDown } from 'lucide-react';
+import { Sprout, Menu, X, Leaf, Search, User, LogOut, LayoutDashboard, Database, Globe, ChevronDown, ShoppingBasket } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -56,6 +56,7 @@ export default function Navbar() {
             {path !== '/' && <NavItem to="/" label={t('home')} />}
             {path !== '/explore' && <NavItem to="/explore" label={t('explore')} />}
             {path !== '/smart-search' && <NavItem to="/smart-search" label={lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'} icon={Search} />}
+            {path !== '/bucket-list' && <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} />}
             {path !== '/natural-fertilizers' && <NavItem to="/natural-fertilizers" label={t('naturalFertilizers')} badge="NEW" />}
           </div>
 
@@ -155,6 +156,17 @@ export default function Navbar() {
             >
               <Search className="w-4 h-4" />
               {lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'}
+            </Link>
+          )}
+
+          {path !== '/bucket-list' && (
+            <Link
+              to="/bucket-list"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 font-medium py-2 text-gray-600"
+            >
+              <ShoppingBasket className="w-4 h-4" />
+              {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
             </Link>
           )}
 
