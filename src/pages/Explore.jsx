@@ -103,7 +103,7 @@ export default function Explore() {
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
           >
             {gettingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
-            {globalLocation ? 'Location Active' : 'Find Near Me'}
+            {globalLocation ? 'Location Active' : 'Use My Location'}
           </button>
           
           <div className="relative flex-grow md:w-72">
