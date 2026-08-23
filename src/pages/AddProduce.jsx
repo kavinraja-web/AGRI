@@ -160,20 +160,6 @@ export default function AddProduce() {
       let finalLat = formData.lat;
       let finalLng = formData.lng;
 
-      // Automatically convert typed location name into GPS coordinates if missing
-      if (!finalLat && !finalLng && formData.location) {
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(formData.location)}&email=hello@agricul.com`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            finalLat = parseFloat(data[0].lat);
-            finalLng = parseFloat(data[0].lon);
-          }
-        } catch (geoErr) {
-          console.warn("Failed to forward geocode typed location:", geoErr);
-        }
-      }
-
       let imageUrl = 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600&h=400';
       if (selectedFile) {
         imageUrl = await uploadProduceImage(selectedFile);

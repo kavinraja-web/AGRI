@@ -11,9 +11,13 @@ export default function ProductCard({ product }) {
 
   // Calculate distance if product has lat/lng and user location is available
   let displayDistance = product.distance;
-  if (globalLocation && product.lat && product.lng) {
-    const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
-    displayDistance = `📍 ${dist.toFixed(1)} km away`;
+  if (globalLocation && !displayDistance) {
+    if (product.lat && product.lng) {
+      const dist = calculateDistanceInKm(globalLocation.lat, globalLocation.lng, product.lat, product.lng);
+      displayDistance = `📍 ${dist.toFixed(1)} km away`;
+    } else {
+      displayDistance = '📍 Distance unavailable';
+    }
   }
 
   return (

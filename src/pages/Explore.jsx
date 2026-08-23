@@ -56,11 +56,15 @@ export default function Explore() {
                 distanceValue: dist 
               };
             }
-            return product;
+            return {
+               ...product,
+               distance: '📍 Distance unavailable',
+               distanceValue: 999999
+            };
           });
           
           if (sortBy === 'Nearest First') {
-            data.sort((a, b) => (a.distanceValue || 9999) - (b.distanceValue || 9999));
+            data.sort((a, b) => (a.distanceValue || 999999) - (b.distanceValue || 999999));
           }
         }
         
