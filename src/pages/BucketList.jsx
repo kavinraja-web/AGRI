@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBasket, Plus, Trash2, MapPin, Navigation, Map as MapIcon, RefreshCw, AlertCircle, Sparkles, Navigation2 } from 'lucide-react';
+import { ShoppingBasket, Plus, Trash2, MapPin, Navigation, Map as MapIcon, RefreshCw, AlertCircle, Sparkles, Navigation2, Phone, MessageCircle } from 'lucide-react';
 import { getProducts } from '../services/productService';
 import { farmers as allFarmers } from '../data/mockData';
 import { optimizeRoute } from '../services/routeOptimizer';
@@ -358,7 +358,7 @@ export default function BucketList() {
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
+                          <div className="space-y-2 mb-4">
                             {stop.itemsToBuy.map(item => (
                               <div key={item.reqId} className="flex justify-between items-center bg-white p-2.5 rounded-xl border border-gray-100">
                                 <span className="font-medium text-gray-800 flex items-center gap-2">
@@ -370,6 +370,18 @@ export default function BucketList() {
                                 <span className="text-sm font-semibold text-gray-600">₹{item.price * (item.reqQuantity || 1)}</span>
                               </div>
                             ))}
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+                            <a href={`tel:${stop.phone || '+919876543210'}`} className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
+                              <Phone className="w-4 h-4" /> Call
+                            </a>
+                            <a href={`https://wa.me/${(stop.phone || '+919876543210').replace(/\D/g, '')}?text=Hi%20${stop.farmerName},%20I%20would%20like%20to%20buy%20some%20produce.`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors">
+                              <MessageCircle className="w-4 h-4" /> WhatsApp
+                            </a>
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors">
+                              <Navigation className="w-4 h-4" /> Navigate
+                            </a>
                           </div>
                         </div>
                       </div>

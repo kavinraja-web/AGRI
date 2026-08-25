@@ -39,6 +39,7 @@ export function optimizeRoute(bucketList, startLocation, allProducts, allFarmers
         farmerName: product.farmerName,
         lat: product.lat || farmer?.lat,
         lng: product.lng || farmer?.lng,
+        phone: farmer?.phone || '+919876543210',
         products: [],
       };
     }
