@@ -8,7 +8,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import FarmerDashboard from './pages/FarmerDashboard';
 import AddProduce from './pages/AddProduce';
-import NaturalFertilizers from './pages/NaturalFertilizers';
 import SmartSearch from './pages/SmartSearch';
 import BucketList from './pages/BucketList';
 import { AuthProvider } from './context/AuthContext';
@@ -26,7 +25,6 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/smart-search" element={<SmartSearch />} />
-              <Route path="/natural-fertilizers" element={<NaturalFertilizers />} />
               <Route path="/bucket-list" element={<BucketList />} />
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/farmer/:id" element={<FarmerProfile />} />

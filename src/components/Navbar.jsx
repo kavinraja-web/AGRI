@@ -57,7 +57,6 @@ export default function Navbar() {
             <NavItem to="/explore" label={t('explore')} active={path === '/explore'} />
             <NavItem to="/smart-search" label={lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'} icon={Search} active={path === '/smart-search'} />
             <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} active={path === '/bucket-list'} />
-            <NavItem to="/natural-fertilizers" label={t('naturalFertilizers')} badge="NEW" active={path === '/natural-fertilizers'} />
           </div>
 
           {/* Desktop Right Side */}
@@ -168,15 +167,6 @@ export default function Navbar() {
           >
             <ShoppingBasket className="w-4 h-4" />
             {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
-          </Link>
-
-          <Link
-            to="/natural-fertilizers"
-            onClick={() => setIsOpen(false)}
-            className={`flex items-center justify-between font-medium py-2 ${path === '/natural-fertilizers' ? 'text-forest-700' : 'text-gray-600'}`}
-          >
-            <span>{t('naturalFertilizers')}</span>
-            <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-sm">NEW</span>
           </Link>
 
           <hr className="border-gray-100" />
