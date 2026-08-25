@@ -1,5 +1,5 @@
 /**
- * FarmConnect Smart Search Service
+ * Marudham Smart Search Service
  *
  * Parses natural-language queries (English / Tamil / Tanglish / Mixed)
  * into structured filters and ranks real product results.

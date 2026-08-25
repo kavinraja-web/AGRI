@@ -221,7 +221,7 @@ export default function SmartSearch() {
               placeholder={
                 lang === 'ta'
                   ? 'தக்காளி, வெங்காயம் போன்றவற்றை தேடுங்கள்...'
-                  : 'Ask FarmConnect anything... e.g. "Tomatoes under ₹30"'
+                  : 'Ask Marudham anything... e.g. "Tomatoes under ₹30"'
               }
               className="flex-1 px-3 py-4 text-gray-900 text-lg outline-none bg-transparent placeholder-gray-400"
               autoFocus

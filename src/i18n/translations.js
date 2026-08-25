@@ -1,4 +1,4 @@
-// Tamil / English translations for the entire FarmConnect app
+// Tamil / English translations for the entire Marudham app
 export const translations = {
   en: {
     // Navbar
@@ -28,7 +28,7 @@ export const translations = {
     newHarvest: 'New Harvest',
 
     // Landing Trust
-    whyChoose: 'Why choose FarmConnect?',
+    whyChoose: 'Why choose Marudham?',
     whyChooseSubtitle: "We're building a transparent ecosystem that benefits both farmers and consumers.",
     transparentPrices: 'Transparent Prices',
     transparentPricesDesc: 'See current prices from different farmers before you contact.',
@@ -119,7 +119,7 @@ export const translations = {
     noAccount: "Don't have a farmer account?",
     registerHere: 'Register here',
     joinTitle: 'Join as a Farmer',
-    joinSubtitle: 'Join FarmConnect and showcase your produce directly to your community.',
+    joinSubtitle: 'Join Marudham and showcase your produce directly to your community.',
     fullName: 'Full Name',
     phoneNumber: 'Phone Number',
     farmName: 'Farm Name (Optional)',
@@ -240,7 +240,7 @@ export const translations = {
     newHarvest: 'புதிய அறுவடை',
 
     // Landing Trust
-    whyChoose: 'FarmConnect ஏன் தேர்வு செய்ய வேண்டும்?',
+    whyChoose: 'Marudham ஏன் தேர்வு செய்ய வேண்டும்?',
     whyChooseSubtitle: 'விவசாயிகள் மற்றும் நுகர்வோர் இருவருக்கும் பயனளிக்கும் வெளிப்படையான சுற்றுச்சூழலை நாங்கள் உருவாக்குகிறோம்.',
     transparentPrices: 'வெளிப்படையான விலைகள்',
     transparentPricesDesc: 'தொடர்பு கொள்வதற்கு முன் வெவ்வேறு விவசாயிகளிடமிருந்து தற்போதைய விலைகளை காணுங்கள்.',
@@ -331,7 +331,7 @@ export const translations = {
     noAccount: 'விவசாயி கணக்கு இல்லையா?',
     registerHere: 'இங்கே பதிவு செய்யுங்கள்',
     joinTitle: 'விவசாயியாக சேரவும்',
-    joinSubtitle: 'FarmConnect ல் சேரவும் மற்றும் உங்கள் விளைபொருட்களை உங்கள் சமூகத்தினருக்கு நேரடியாக காட்டுங்கள்.',
+    joinSubtitle: 'Marudham ல் சேரவும் மற்றும் உங்கள் விளைபொருட்களை உங்கள் சமூகத்தினருக்கு நேரடியாக காட்டுங்கள்.',
     fullName: 'முழு பெயர்',
     phoneNumber: 'தொலைபேசி எண்',
     farmName: 'பண்ணை பெயர் (விருப்பத்தேர்வு)',

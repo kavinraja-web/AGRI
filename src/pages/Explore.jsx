@@ -150,7 +150,7 @@ export default function Explore() {
             <Search className="ml-3 h-5 w-5 text-gray-400 flex-shrink-0" />
             <input
               type="text"
-              placeholder={lang === 'ta' ? 'தக்காளி, வெங்காயம்...' : 'Ask FarmConnect... e.g. "Tomatoes under ₹30"'}
+              placeholder={lang === 'ta' ? 'தக்காளி, வெங்காயம்...' : 'Ask Marudham... e.g. "Tomatoes under ₹30"'}
               value={smartQuery}
               onChange={(e) => setSmartQuery(e.target.value)}
               className="w-full pl-3 pr-2 py-2.5 outline-none bg-transparent"

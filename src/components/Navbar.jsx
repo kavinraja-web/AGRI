@@ -46,7 +46,7 @@ export default function Navbar() {
                 <Sprout className="h-7 w-7 text-forest-700" strokeWidth={2.5} />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900 tracking-tight leading-none">FarmConnect</span>
+                <span className="text-xl font-bold text-gray-900 tracking-tight leading-none">Marudham</span>
                 <span className="text-[11px] text-gray-500 font-medium tracking-tight mt-0.5">{t('growBetter')}</span>
               </div>
             </Link>
