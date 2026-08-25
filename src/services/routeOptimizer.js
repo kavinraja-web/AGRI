@@ -12,7 +12,6 @@ import { calculateDistanceInKm } from '../utils/distance';
  */
 
 export function optimizeRoute(bucketList, startLocation, allProducts, allFarmers) {
-  // Normalize bucket list
   const requiredItems = bucketList.map(item => ({
     ...item,
     canonical: item.name.toLowerCase(),
@@ -20,195 +19,146 @@ export function optimizeRoute(bucketList, startLocation, allProducts, allFarmers
 
   const itemNames = requiredItems.map(i => i.canonical);
 
-  // Filter products that match bucket list
   const relevantProducts = allProducts.filter(p => {
     const pName = p.name.toLowerCase();
     return itemNames.some(req => pName.includes(req)) && p.status !== 'Out of Stock';
   });
 
-  // Group by farmer
-  const farmerInventory = {};
-  for (const product of relevantProducts) {
-    const matchedReq = requiredItems.find(req => product.name.toLowerCase().includes(req.canonical));
-    if (!matchedReq) continue;
-
-    if (!farmerInventory[product.farmerId]) {
-      const farmer = allFarmers.find(f => f.id === product.farmerId);
-      farmerInventory[product.farmerId] = {
-        farmerId: product.farmerId,
-        farmerName: product.farmerName,
-        lat: product.lat || farmer?.lat,
-        lng: product.lng || farmer?.lng,
-        phone: farmer?.phone || '+919876543210',
-        products: [],
-      };
-    }
-
-    farmerInventory[product.farmerId].products.push({
-      ...product,
-      reqId: matchedReq.id,
-      reqName: matchedReq.name,
-      reqQuantity: matchedReq.quantity,
-    });
-  }
-
-  const farmersList = Object.values(farmerInventory).filter(f => f.lat && f.lng);
-
-  // Find valid combinations (Simple greedy/recursive set cover for small N)
-  // For hackathons, we can limit the depth or just search all combinations up to length 4.
-  const validCombinations = [];
-  
-  function searchCombinations(currentCombo, remainingFarmers) {
-    // Check if currentCombo satisfies all required items
-    const coveredReqIds = new Set();
-    currentCombo.forEach(f => {
-      f.products.forEach(p => coveredReqIds.add(p.reqId));
-    });
-
-    if (coveredReqIds.size === requiredItems.length) {
-      validCombinations.push([...currentCombo]);
-      return;
-    }
-
-    if (currentCombo.length >= 4) return; // Limit max stops to 4
-
-    for (let i = 0; i < remainingFarmers.length; i++) {
-      searchCombinations([...currentCombo, remainingFarmers[i]], remainingFarmers.slice(i + 1));
-    }
-  }
-
-  searchCombinations([], farmersList);
-
-  // If no combination covers everything, find the one that covers the most
+  const purchases = [];
   const unfulfilledItems = [];
-  let combinationsToEvaluate = validCombinations;
 
-  if (validCombinations.length === 0) {
-    // Greedy fallback: pick farmers that give the most items
-    let bestCombo = [];
-    let maxCovered = 0;
+  // For each requirement, aggregate supply
+  for (const req of requiredItems) {
+    // Find matching products for this requirement
+    let matches = relevantProducts.filter(p => p.name.toLowerCase().includes(req.canonical));
     
-    const allPossibleCombos = [];
-    function getAllCombos(current, remaining) {
-      if (current.length > 0) allPossibleCombos.push([...current]);
-      if (current.length >= 4) return;
-      for (let i = 0; i < remaining.length; i++) {
-        getAllCombos([...current, remaining[i]], remaining.slice(i + 1));
-      }
-    }
-    getAllCombos([], farmersList);
-
-    for (const combo of allPossibleCombos) {
-      const covered = new Set();
-      combo.forEach(f => f.products.forEach(p => covered.add(p.reqId)));
-      if (covered.size > maxCovered) {
-        maxCovered = covered.size;
-        bestCombo = combo;
-      }
-    }
-
-    combinationsToEvaluate = bestCombo.length > 0 ? [bestCombo] : [];
-
-    // Determine unfulfilled
-    const coveredIds = new Set();
-    bestCombo.forEach(f => f.products.forEach(p => coveredIds.add(p.reqId)));
-    requiredItems.forEach(req => {
-      if (!coveredIds.has(req.id)) unfulfilledItems.push(req);
-    });
-  }
-
-  // Sequence and score combinations
-  let bestRoute = null;
-  let bestScore = Infinity; // Lower is better
-
-  for (const combo of combinationsToEvaluate) {
-    // Determine which products to buy from which farmer to avoid duplicates and minimize cost
-    const purchasePlan = new Map(); // reqId -> { product, farmerId }
-    
-    // Sort all products in this combo by price
-    const allComboProducts = [];
-    combo.forEach(f => {
-      f.products.forEach(p => allComboProducts.push({ ...p, farmerId: f.farmerId }));
-    });
-    allComboProducts.sort((a, b) => a.price - b.price);
-
-    for (const p of allComboProducts) {
-      if (!purchasePlan.has(p.reqId)) {
-        purchasePlan.set(p.reqId, p);
-      }
-    }
-
-    // Filter combo to only include farmers we are actually buying from
-    const activeFarmerIds = new Set(Array.from(purchasePlan.values()).map(p => p.farmerId));
-    const activeFarmers = combo.filter(f => activeFarmerIds.has(f.farmerId));
-
-    // Route Sequencing: Nearest Neighbor
-    const sequencedRoute = [];
-    let currentLoc = startLocation;
-    let unvisited = [...activeFarmers];
-    let totalDistance = 0;
-
-    while (unvisited.length > 0) {
-      let nearest = null;
-      let minDistance = Infinity;
-      let nearestIdx = -1;
-
-      for (let i = 0; i < unvisited.length; i++) {
-        const f = unvisited[i];
-        const dist = calculateDistanceInKm(currentLoc.lat, currentLoc.lng, f.lat, f.lng);
-        if (dist < minDistance) {
-          minDistance = dist;
-          nearest = f;
-          nearestIdx = i;
-        }
-      }
-
-      sequencedRoute.push(nearest);
-      totalDistance += minDistance;
-      currentLoc = { lat: nearest.lat, lng: nearest.lng };
-      unvisited.splice(nearestIdx, 1);
-    }
-
-    // Add return trip distance (optional, but good for total travel cost)
-    // totalDistance += calculateDistanceInKm(currentLoc.lat, currentLoc.lng, startLocation.lat, startLocation.lng);
-
-    // Calculate Costs
-    let productCost = 0;
-    const finalStops = sequencedRoute.map(f => {
-      const itemsToBuy = Array.from(purchasePlan.values()).filter(p => p.farmerId === f.farmerId);
-      const stopCost = itemsToBuy.reduce((sum, p) => sum + (p.price * (p.reqQuantity || 1)), 0);
-      productCost += stopCost;
-      return {
-        ...f,
-        itemsToBuy,
-        stopCost,
-      };
+    // Sort matches: primarily by price (lowest first), secondarily by distance to start location
+    matches.sort((a, b) => {
+      if (a.price !== b.price) return a.price - b.price;
+      const farmerA = allFarmers.find(f => f.id === a.farmerId);
+      const farmerB = allFarmers.find(f => f.id === b.farmerId);
+      const distA = farmerA ? calculateDistanceInKm(startLocation.lat, startLocation.lng, farmerA.lat, farmerA.lng) : 999;
+      const distB = farmerB ? calculateDistanceInKm(startLocation.lat, startLocation.lng, farmerB.lat, farmerB.lng) : 999;
+      return distA - distB;
     });
 
-    const travelCost = totalDistance * 6; // Assume ₹6 per km
-    const travelTime = totalDistance * 2; // Assume 2 mins per km on rural/semi-urban roads + stop time
+    let quantityNeeded = req.quantity;
+    let quantityFulfilled = 0;
 
-    // Scoring formula (lower is better)
-    // 1 km = 1 point, 1 stop = 5 points, 10 rs cost = 1 point
-    const score = totalDistance + (finalStops.length * 5) + ((productCost + travelCost) / 10);
+    for (const p of matches) {
+      if (quantityNeeded <= 0) break;
+      
+      const availableQty = Number(p.quantity) || 50; // Fallback to 50 if missing in mock
+      const qtyToBuy = Math.min(quantityNeeded, availableQty);
+      
+      if (qtyToBuy > 0) {
+        purchases.push({
+          reqId: req.id,
+          reqName: req.name,
+          reqUnit: req.unit,
+          productId: p.id,
+          productName: p.name,
+          price: p.price,
+          quantityBought: qtyToBuy,
+          farmerId: p.farmerId,
+          farmerName: p.farmerName || allFarmers.find(f => f.id === p.farmerId)?.name || 'Unknown Farmer',
+        });
+        
+        quantityNeeded -= qtyToBuy;
+        quantityFulfilled += qtyToBuy;
+      }
+    }
 
-    if (score < bestScore) {
-      bestScore = score;
-      bestRoute = {
-        stops: finalStops,
-        metrics: {
-          totalDistance: totalDistance.toFixed(1),
-          travelTime: Math.round(travelTime + (finalStops.length * 10)), // Add 10 mins per stop
-          productCost: Math.round(productCost),
-          travelCost: Math.round(travelCost),
-          totalCost: Math.round(productCost + travelCost),
-          farmerCount: finalStops.length,
-          itemCount: purchasePlan.size,
-        },
-        unfulfilledItems
-      };
+    if (quantityNeeded > 0) {
+      unfulfilledItems.push({
+        ...req,
+        quantity: quantityNeeded, // Pass missing qty back to UI
+        originalQuantity: req.quantity
+      });
     }
   }
 
-  return bestRoute;
+  // Group purchases by Farmer to create Stops
+  const stopsMap = new Map();
+  for (const buy of purchases) {
+    if (!stopsMap.has(buy.farmerId)) {
+      const farmer = allFarmers.find(f => f.id === buy.farmerId);
+      stopsMap.set(buy.farmerId, {
+        farmerId: buy.farmerId,
+        farmerName: buy.farmerName,
+        lat: farmer?.lat,
+        lng: farmer?.lng,
+        phone: farmer?.phone || '+919876543210',
+        location: farmer?.location || 'Unknown Location',
+        itemsToBuy: [],
+        stopCost: 0,
+      });
+    }
+    
+    const stop = stopsMap.get(buy.farmerId);
+    stop.itemsToBuy.push({
+      reqId: buy.reqId,
+      reqName: buy.reqName,
+      reqQuantity: buy.quantityBought,
+      unit: buy.reqUnit,
+      price: buy.price,
+    });
+    stop.stopCost += buy.price * buy.quantityBought;
+  }
+
+  const activeFarmers = Array.from(stopsMap.values()).filter(f => f.lat && f.lng);
+
+  if (activeFarmers.length === 0) {
+    return { error: 'No farmers found matching your requirements.', unfulfilledItems };
+  }
+
+  // Route Sequencing: Nearest Neighbor
+  const sequencedRoute = [];
+  let currentLoc = startLocation;
+  let unvisited = [...activeFarmers];
+  let totalDistance = 0;
+
+  while (unvisited.length > 0) {
+    let nearest = null;
+    let minDistance = Infinity;
+    let nearestIdx = -1;
+
+    for (let i = 0; i < unvisited.length; i++) {
+      const f = unvisited[i];
+      const dist = calculateDistanceInKm(currentLoc.lat, currentLoc.lng, f.lat, f.lng);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = f;
+        nearestIdx = i;
+      }
+    }
+
+    sequencedRoute.push(nearest);
+    totalDistance += minDistance;
+    currentLoc = { lat: nearest.lat, lng: nearest.lng };
+    unvisited.splice(nearestIdx, 1);
+  }
+
+  // Calculate Metrics
+  let productCost = 0;
+  for (const stop of sequencedRoute) {
+    productCost += stop.stopCost;
+  }
+
+  const travelCost = totalDistance * 6; // ₹6 per km
+  const travelTime = totalDistance * 2; // 2 mins per km
+
+  return {
+    stops: sequencedRoute,
+    metrics: {
+      totalDistance: totalDistance.toFixed(1),
+      travelTime: Math.round(travelTime + (sequencedRoute.length * 10)), // Add 10 mins per stop
+      productCost: Math.round(productCost),
+      travelCost: Math.round(travelCost),
+      totalCost: Math.round(productCost + travelCost),
+      farmerCount: sequencedRoute.length,
+      itemCount: purchases.length,
+    },
+    unfulfilledItems
+  };
 }
