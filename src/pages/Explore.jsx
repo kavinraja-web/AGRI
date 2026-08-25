@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal, Loader2, MapPin } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Search, Filter, SlidersHorizontal, Loader2, MapPin, Mic, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { getProducts } from '../services/productService';
 import { useLanguage } from '../context/LanguageContext';
@@ -26,7 +26,8 @@ const SORT_OPTIONS = [
 
 export default function Explore() {
   const [searchParams] = useSearchParams();
-  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { lang, t } = useLanguage();
   const { globalLocation, requestLocation } = useAuth();
 
   const [searchTerm, setSearchTerm]           = useState(searchParams.get('search') || '');
@@ -37,6 +38,41 @@ export default function Explore() {
   const [loading, setLoading]                 = useState(true);
   
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  const [smartQuery, setSmartQuery] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const handleSmartSearchSubmit = (e) => {
+    e?.preventDefault();
+    if (smartQuery.trim()) {
+      navigate(`/smart-search?q=${encodeURIComponent(smartQuery)}`);
+    }
+  };
+
+  const startVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert(lang === 'ta' ? "குரல் தேடல் உங்கள் பிரவுசரில் வேலை செய்யவில்லை." : "Voice search is not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSmartQuery(transcript);
+      navigate(`/smart-search?q=${encodeURIComponent(transcript)}`);
+    };
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
 
   useEffect(() => {
     let active = true;
@@ -110,16 +146,32 @@ export default function Explore() {
             {globalLocation ? 'Location Active' : 'Use My Location'}
           </button>
           
-          <div className="relative flex-grow md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <form onSubmit={handleSmartSearchSubmit} className="relative flex-grow md:w-96 flex items-center bg-white rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-forest-500 overflow-hidden shadow-sm">
+            <Search className="ml-3 h-5 w-5 text-gray-400 flex-shrink-0" />
             <input
               type="text"
-              placeholder={t('searchProducePlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-forest-500 outline-none"
+              placeholder={lang === 'ta' ? 'தக்காளி, வெங்காயம்...' : 'Ask FarmConnect... e.g. "Tomatoes under ₹30"'}
+              value={smartQuery}
+              onChange={(e) => setSmartQuery(e.target.value)}
+              className="w-full pl-3 pr-2 py-2.5 outline-none bg-transparent"
             />
-          </div>
+            <button
+              type="button"
+              onClick={startVoiceSearch}
+              className={`p-2 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-forest-600'}`}
+              title={lang === 'ta' ? 'குரல் மூலம் தேடு' : 'Search by Voice'}
+            >
+              <Mic className="h-5 w-5" />
+            </button>
+            <button
+              type="submit"
+              disabled={!smartQuery.trim()}
+              className="bg-forest-600 text-white px-4 py-3 font-semibold hover:bg-forest-700 transition-colors flex items-center disabled:opacity-50"
+            >
+              <Sparkles className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">{lang === 'ta' ? 'AI தேடல்' : 'Smart Search'}</span>
+            </button>
+          </form>
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className="md:hidden flex items-center justify-center p-2.5 border border-gray-200 rounded-xl bg-white text-gray-700"

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Mic, Sparkles, X, Loader2, ArrowRight, Filter } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { getProducts } from '../services/productService';
@@ -59,8 +60,10 @@ function SkeletonCard() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function SmartSearch() {
   const { lang, setLang } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const initialQ = searchParams.get('q') || '';
 
-  const [query, setQuery]           = useState('');
+  const [query, setQuery]           = useState(initialQ);
   const [isListening, setIsListening] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
   const [results, setResults]       = useState([]);
@@ -109,6 +112,12 @@ export default function SmartSearch() {
     setClarification(clar);
     setLoadingStep(null);
   }, [allProducts, dbReady, setLang]);
+
+  useEffect(() => {
+    if (initialQ && dbReady && !hasSearched && !loadingStep) {
+      executeSearch(initialQ);
+    }
+  }, [initialQ, dbReady, hasSearched, loadingStep, executeSearch]);
 
   const handleSubmit = (e) => {
     e?.preventDefault();

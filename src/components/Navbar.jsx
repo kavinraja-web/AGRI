@@ -55,7 +55,6 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-8 text-sm ml-auto mr-8">
             <NavItem to="/" label={t('home')} active={path === '/'} />
             <NavItem to="/explore" label={t('explore')} active={path === '/explore'} />
-            <NavItem to="/smart-search" label={lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'} icon={Search} active={path === '/smart-search'} />
             <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} active={path === '/bucket-list'} />
           </div>
 
@@ -149,15 +148,6 @@ export default function Navbar() {
           </Link>
           <Link to="/explore" onClick={() => setIsOpen(false)} className={`block font-medium py-2 ${path === '/explore' ? 'text-forest-700' : 'text-gray-600'}`}>
             {t('explore')}
-          </Link>
-          
-          <Link
-            to="/smart-search"
-            onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-2 font-medium py-2 ${path === '/smart-search' ? 'text-forest-700' : 'text-gray-600'}`}
-          >
-            <Search className="w-4 h-4" />
-            {lang === 'ta' ? 'ஸ்மார்ட் தேடல்' : 'Smart Search'}
           </Link>
 
           <Link
