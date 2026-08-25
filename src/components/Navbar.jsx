@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sprout, Menu, X, Leaf, Search, User, LogOut, LayoutDashboard, Database, Globe, ChevronDown, ShoppingBasket } from 'lucide-react';
+import { Sprout, Menu, X, Leaf, Search, User, LogOut, LayoutDashboard, Database, Globe, ChevronDown, ShoppingBasket, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -56,6 +56,7 @@ export default function Navbar() {
             <NavItem to="/" label={t('home')} active={path === '/'} />
             <NavItem to="/explore" label={t('explore')} active={path === '/explore'} />
             <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} active={path === '/bucket-list'} />
+            <NavItem to="/trends" label={lang === 'ta' ? 'போக்கு' : 'Trends'} icon={BarChart3} badge="AI" active={path === '/trends'} />
           </div>
 
           {/* Desktop Right Side */}
@@ -157,6 +158,18 @@ export default function Navbar() {
           >
             <ShoppingBasket className="w-4 h-4" />
             {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
+          </Link>
+
+          <Link
+            to="/trends"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center justify-between font-medium py-2 ${path === '/trends' ? 'text-forest-700' : 'text-gray-600'}`}
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              {lang === 'ta' ? 'போக்கு' : 'Trends'}
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase">AI</span>
           </Link>
 
           <hr className="border-gray-100" />

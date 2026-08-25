@@ -10,6 +10,7 @@ import FarmerDashboard from './pages/FarmerDashboard';
 import AddProduce from './pages/AddProduce';
 import SmartSearch from './pages/SmartSearch';
 import BucketList from './pages/BucketList';
+import TrendAnalysis from './pages/TrendAnalysis';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -26,6 +27,7 @@ function App() {
               <Route path="/explore" element={<Explore />} />
               <Route path="/smart-search" element={<SmartSearch />} />
               <Route path="/bucket-list" element={<BucketList />} />
+              <Route path="/trends" element={<TrendAnalysis />} />
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/farmer/:id" element={<FarmerProfile />} />
               <Route path="/login" element={<Login />} />
