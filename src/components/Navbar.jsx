@@ -55,7 +55,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-8 text-sm ml-auto mr-8">
             <NavItem to="/" label={t('home')} active={path === '/'} />
             <NavItem to="/explore" label={t('explore')} active={path === '/explore'} />
-            <NavItem to="/bucket-list" label={lang === 'ta' ? 'பட்டியல்' : 'Bucket List'} icon={ShoppingBasket} active={path === '/bucket-list'} />
+
             <NavItem to="/trends" label={lang === 'ta' ? 'போக்கு' : 'Trends'} icon={BarChart3} badge="AI" active={path === '/trends'} />
           </div>
 
@@ -149,15 +149,6 @@ export default function Navbar() {
           </Link>
           <Link to="/explore" onClick={() => setIsOpen(false)} className={`block font-medium py-2 ${path === '/explore' ? 'text-forest-700' : 'text-gray-600'}`}>
             {t('explore')}
-          </Link>
-
-          <Link
-            to="/bucket-list"
-            onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-2 font-medium py-2 ${path === '/bucket-list' ? 'text-forest-700' : 'text-gray-600'}`}
-          >
-            <ShoppingBasket className="w-4 h-4" />
-            {lang === 'ta' ? 'பட்டியல்' : 'Bucket List'}
           </Link>
 
           <Link

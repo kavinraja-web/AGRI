@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal, Loader2, MapPin, Mic, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import InteractiveBucketList from '../components/InteractiveBucketList';
 import { getProducts } from '../services/productService';
 import { useLanguage } from '../context/LanguageContext';
 import { calculateDistanceInKm } from '../utils/distance';
@@ -278,6 +279,9 @@ export default function Explore() {
           )}
         </div>
       </div>
+
+      {/* Smart Bucket Planner at the bottom */}
+      <InteractiveBucketList />
     </div>
   );
 }
